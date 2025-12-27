@@ -1,23 +1,20 @@
+import "./vipdle.css";
 import React, { useState, useEffect } from 'react';
+import { CHARACTERS } from "./data/database";
 
-// Sample Data Pool
-const CHARACTERS = [
-  { id: 1, name: "Mario", job: "Plumber", age: 25, height: 155, series: "Nintendo" },
-  { id: 2, name: "Gandalf", job: "Wizard", age: 2000, height: 180, series: "Lord of the Rings" },
-  { id: 3, name: "Batman", job: "Vigilante", age: 35, height: 188, series: "DC" },
-  { id: 4, name: "Spider-Man", job: "Student", age: 17, height: 178, series: "Marvel" },
-];
-
-const CharacterWordle = () => {
+const VIPdle = () => {
   const [target, setTarget] = useState(null);
   const [guess, setGuess] = useState("");
   const [guesses, setGuesses] = useState([]);
   const [gameOver, setGameOver] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [showDropdown, setShowDropdown] = useState(false);
+
 
   // Initialize game: Pick a random character
   useEffect(() => {
-    const randomChar = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
-    setTarget(randomChar);
+    setTarget(getDailyCharacter());
   }, []);
 
   const handleGuess = (e) => {
@@ -31,59 +28,200 @@ const CharacterWordle = () => {
     } else {
       alert("Character not found in database!");
     }
+
+    setShowDropdown(false);
+    setSuggestions([]);
+    setActiveIndex(-1);
   };
 
-  const getFeedbackClass = (attr, value) => {
-    if (value === target[attr]) return "bg-green-500 text-white"; // Exact match
-    if (typeof value === 'number' && Math.abs(value - target[attr]) <= 10) return "bg-yellow-500 text-white"; // Close call
-    return "bg-slate-700 text-white"; // No match
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setGuess(value);
+    setActiveIndex(-1);
+
+    if (!value) {
+      setSuggestions(CHARACTERS);
+      return;
+    }
+
+    const matches = CHARACTERS.filter(c =>
+      c.name.toLowerCase().startsWith(value.toLowerCase())
+    );
+
+    setSuggestions(matches);
+  };
+
+  const handleFocus = () => {
+    setSuggestions(CHARACTERS);
+    setShowDropdown(true);
+  };
+
+  const handleKeyDown = (e) => {
+    if (!showDropdown || suggestions.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      setActiveIndex((prev) =>
+        prev < suggestions.length - 1 ? prev + 1 : prev
+      );
+    }
+
+    if (e.key === "ArrowUp") {
+      setActiveIndex((prev) => (prev > 0 ? prev - 1 : -1));
+    }
+
+    if (e.key === "Enter" && activeIndex >= 0) {
+      e.preventDefault();
+      selectSuggestion(suggestions[activeIndex]);
+    }
+
+    if (e.key === "Escape") {
+      setShowDropdown(false);
+    }
+  };
+
+  const getDailyCharacter = () => {
+    const today = new Date();
+
+    // Normalize to UTC so everyone gets the same day
+    const dateString = today.toISOString().split("T")[0]; // YYYY-MM-DD
+
+    // Turn date into a number (simple hash)
+    let hash = 0;
+    for (let i = 0; i < dateString.length; i++) {
+      hash += dateString.charCodeAt(i);
+    }
+
+    const index = hash % CHARACTERS.length;
+    return CHARACTERS[index];
+  };
+
+  const getClass = (attr, value) => {
+    if (value === target[attr]) return "correct";
+    if (typeof value === "number" && Math.abs(value - target[attr]) <= 10)
+      return "close";
+    return "wrong";
+  };
+
+  const selectSuggestion = (character) => {
+    setGuess(character.name);
+    setShowDropdown(false);
+    setSuggestions([]);
+    setActiveIndex(-1);
+  };
+
+  const highlightMatch = (text, match) => {
+    if (!match) return text;
+
+    const start = text.toLowerCase().indexOf(match.toLowerCase());
+    if (start === -1) return text;
+
+    return (
+      <>
+        {text.slice(0, start)}
+        <span className="highlight">
+          {text.slice(start, start + match.length)}
+        </span>
+        {text.slice(start + match.length)}
+      </>
+    );
   };
 
   return (
-    <div className="flex flex-col items-center p-8 bg-slate-900 min-h-screen text-slate-100">
-      <h1 className="text-4xl font-bold mb-8">Character-dle</h1>
+    <div className="app-bg">
+      <div className="game-card">
+        <h1 className="title">VIP dle</h1>
+        <p className="subtitle">
+          Daily character · {new Date().toLocaleDateString()}
+        </p>
 
-      {/* Input Section */}
-      {!gameOver && (
-        <form onSubmit={handleGuess} className="mb-8 flex gap-2">
-          <input 
-            className="p-2 rounded text-black"
-            value={guess}
-            onChange={(e) => setGuess(e.target.value)}
-            placeholder="Enter character name..."
-          />
-          <button className="bg-blue-600 px-4 py-2 rounded hover:bg-blue-500">Guess</button>
-        </form>
-      )}
+        {/* Input Section */}
+        {!gameOver && (
+          <form onSubmit={handleGuess} className="guess-form">
+            <div className="autocomplete">
+              <input
+                className="guess-input"
+                value={guess}
+                onChange={handleInputChange}
+                onFocus={handleFocus}
+                onKeyDown={handleKeyDown}
+                placeholder="Enter character name..."
+              />
 
-      {gameOver && <h2 className="text-2xl text-green-400 mb-4">🎉 You found {target.name}!</h2>}
-
-      {/* Results Table */}
-      <div className="w-full max-w-2xl">
-        <div className="grid grid-cols-5 gap-2 mb-2 font-bold text-center border-b border-slate-600 pb-2">
-          <div>Name</div>
-          <div>Job</div>
-          <div>Age</div>
-          <div>Height</div>
-          <div>Series</div>
-        </div>
-
-        {guesses.map((g, i) => (
-          <div key={i} className="grid grid-cols-5 gap-2 mb-2 text-center animate-in fade-in slide-in-from-top-4">
-            <div className={`p-2 rounded ${getFeedbackClass('name', g.name)}`}>{g.name}</div>
-            <div className={`p-2 rounded ${getFeedbackClass('job', g.job)}`}>{g.job}</div>
-            <div className={`p-2 rounded ${getFeedbackClass('age', g.age)}`}>
-                {g.age} {g.age < target.age ? "↑" : g.age > target.age ? "↓" : ""}
+              {showDropdown && suggestions.length > 0 && (
+                <ul className="dropdown">
+                  {suggestions.map((c, index) => (
+                    <li
+                      key={c.id}
+                      className={`dropdown-item ${index === activeIndex ? "active" : ""}`}
+                      onMouseDown={() => selectSuggestion(c)}
+                    >
+                      <img
+                        src={c.image}
+                        alt={c.name}
+                        className="avatar"
+                        onError={(e) => {
+                          e.target.src = "/images/placeholder.png";
+                        }}
+                      />
+                      <span>{highlightMatch(c.name, guess)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            <div className={`p-2 rounded ${getFeedbackClass('height', g.height)}`}>
-                {g.height}cm {g.height < target.height ? "↑" : g.height > target.height ? "↓" : ""}
+            <button className="guess-btn" disabled={gameOver}>
+              Guess
+            </button>
+          </form>
+        )}
+
+        {gameOver && (
+          <div className="win-banner">
+            🎉 You found {target.name}!
+          </div>
+        )}
+
+        {/* Results Table */}
+        <div className="table">
+          <div className="table-header">
+            <div>Picture</div>
+            <div>Name</div>
+            <div>Job</div>
+            <div>Age</div>
+            <div>Height</div>
+            <div>Series</div>
+          </div>
+
+          {guesses.map((g, i) => (
+          <div key={i} className="table-row">
+            <div
+              className={`tile picture-cell ${g.id === target.id ? "correct" : "wrong"}`}
+            >
+              <img
+                src={g.image}
+                alt={g.name}
+                className="table-avatar"
+                onError={(e) => {
+                  e.target.src = "/images/placeholder.png";
+                }}
+              />
             </div>
-            <div className={`p-2 rounded ${getFeedbackClass('series', g.series)}`}>{g.series}</div>
+            <div className={`tile ${getClass("name", g.name)}`}>{g.name}</div>
+            <div className={`tile ${getClass("job", g.job)}`}>{g.job}</div>
+            <div className={`tile ${getClass("age", g.age)}`}>
+              {g.age} {g.age < target.age ? "↑" : g.age > target.age ? "↓" : ""}
+            </div>
+            <div className={`tile ${getClass("height", g.height)}`}>
+              {g.height}cm {g.height < target.height ? "↑" : g.height > target.height ? "↓" : ""}
+            </div>
+            <div className={`tile ${getClass("series", g.series)}`}>{g.series}</div>
           </div>
         ))}
-      </div>
     </div>
+
+  </div>
+</div>
   );
 };
 
-export default CharacterWordle;
+export default VIPdle;

@@ -1,0 +1,215 @@
+/* ===== Page ===== */
+.app-bg {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #1e293b, #020617);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  color: #e5e7eb;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* ===== Card ===== */
+.game-card {
+  width: 100%;
+  max-width: 48rem;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 1.25rem;
+  padding: 2rem;
+  border: 1px solid #334155;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* ===== Title ===== */
+.title {
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 0.25rem;
+  background: linear-gradient(to right, #60a5fa, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  text-align: center;
+  color: #94a3b8;
+  margin-bottom: 2rem;
+}
+
+/* ===== Input ===== */
+.guess-form {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.guess-input {
+  width: 16rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: #020617;
+  border: 1px solid #475569;
+  color: #e5e7eb;
+}
+
+.guess-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.guess-btn {
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.2s ease;
+}
+
+.guess-btn:hover {
+  background: #3b82f6;
+}
+
+.guess-btn:active {
+  transform: scale(0.96);
+}
+
+.guess-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Win Banner ===== */
+.win-banner {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  text-align: center;
+  border-radius: 0.75rem;
+  border: 1px solid #34d399;
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* ===== Table ===== */
+.table {
+  width: 100%;
+}
+
+.table-header,
+.table-row {
+  display: grid;
+  grid-template-columns: 64px repeat(5, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.table-header {
+  font-weight: 700;
+  color: #cbd5f5;
+  border-bottom: 1px solid #475569;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.picture-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  border: 1px solid #475569;
+  background-color: #020617;
+}
+
+/* ===== Tiles ===== */
+.tile {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #475569;
+  transition: transform 0.15s ease;
+}
+
+.tile:hover {
+  transform: scale(1.03);
+}
+
+.tile.correct {
+  background: #10b981;
+  border-color: #6ee7b7;
+  color: white;
+}
+
+.tile.close {
+  background: #f59e0b;
+  border-color: #fde68a;
+  color: white;
+}
+
+.tile.wrong {
+  background: #020617;
+  color: #e5e7eb;
+}
+
+.autocomplete {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 110%;
+  width: 100%;
+  background: #020617;
+  border: 1px solid #475569;
+  border-radius: 0.5rem;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 20;
+  list-style: none;   /* removes bullets */
+  padding: 0;
+  margin: 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+
+  /* THIS is the key part */
+  object-fit: cover;
+
+  border-radius: 50%;
+  border: 1px solid #475569;
+  flex-shrink: 0;
+  background-color: #020617;
+}
+
+.dropdown-item:hover,
+.dropdown-item.active {
+  background: #1e293b;
+}
+
+.highlight {
+  color: #60a5fa;
+  font-weight: 700;
+}
