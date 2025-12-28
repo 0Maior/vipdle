@@ -29,6 +29,7 @@
   text-align: center;
   margin-bottom: 0.25rem;
   background: linear-gradient(to right, #60a5fa, #a78bfa);
+  background-clip: border-box;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

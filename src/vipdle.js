@@ -1,6 +1,6 @@
 import "./vipdle.css";
 import React, { useState, useEffect } from 'react';
-import { CHARACTERS } from "./data/database";
+import { CHARACTERS } from "./data/testdatabase";
 
 const VIPdle = () => {
   const [target, setTarget] = useState(null);
@@ -96,9 +96,25 @@ const VIPdle = () => {
   };
 
   const getClass = (attr, value) => {
+    // JOB: partial match allowed
+    if (attr === "job") {
+      const matches = value.filter(job => target.job.includes(job)).length;
+
+      if (matches === target.job.length && value.length === target.job.length)
+        return "correct";
+
+      if (matches > 0)
+        return "close";
+
+      return "wrong";
+    }
+
+    // default behavior
     if (value === target[attr]) return "correct";
+
     if (typeof value === "number" && Math.abs(value - target[attr]) <= 10)
       return "close";
+
     return "wrong";
   };
 
@@ -207,7 +223,7 @@ const VIPdle = () => {
               />
             </div>
             <div className={`tile ${getClass("name", g.name)}`}>{g.name}</div>
-            <div className={`tile ${getClass("job", g.job)}`}>{g.job}</div>
+            <div className={`tile ${getClass("job", g.job)}`}>  {g.job.join(", ")}</div>
             <div className={`tile ${getClass("age", g.age)}`}>
               {g.age} {g.age < target.age ? "↑" : g.age > target.age ? "↓" : ""}
             </div>
