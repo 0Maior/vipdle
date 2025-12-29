@@ -1,6 +1,6 @@
 import "./vipdle.css";
 import React, { useState, useEffect } from 'react';
-import { CHARACTERS } from "./data/testdatabase";
+import { CHARACTERS } from "./data/database";
 
 const VIPdle = () => {
   const [target, setTarget] = useState(null);
@@ -109,6 +109,18 @@ const VIPdle = () => {
       return "wrong";
     }
 
+    if (attr === "generations") {
+      const matches = value.filter(generations => target.generations.includes(generations)).length;
+
+      if (matches === target.generations.length && value.length === target.generations.length)
+        return "correct";
+
+      if (matches > 0)
+        return "close";
+
+      return "wrong";
+    }
+
     // default behavior
     if (value === target[attr]) return "correct";
 
@@ -198,45 +210,60 @@ const VIPdle = () => {
         )}
 
         {/* Results Table */}
-        <div className="table">
-          <div className="table-header">
-            <div>Picture</div>
-            <div>Name</div>
-            <div>Job</div>
-            <div>Age</div>
-            <div>Height</div>
-            <div>Series</div>
-          </div>
+        <div className="table-wrapper">
+          <div className="table">
+            <div className="table-header">
+              <div>Picture</div>
+              <div>Name</div>
+              <div>Gender</div>
+              <div>Sexuality</div>
+              <div>Children</div>
+              <div>Height</div>
+              <div>Job</div>
+              <div>Birth Year</div>
+              <div>Birth Place</div>
+              <div>DoA</div>
+              <div>Fame rate</div>
+              <div>Fame for generations</div>
+              <div>Zodiac</div>
+            </div>
 
-          {guesses.map((g, i) => (
-          <div key={i} className="table-row">
-            <div
-              className={`tile picture-cell ${g.id === target.id ? "correct" : "wrong"}`}
-            >
-              <img
-                src={g.image}
-                alt={g.name}
-                className="table-avatar"
-                onError={(e) => {
-                  e.target.src = "/images/placeholder.png";
-                }}
-              />
+            {guesses.map((g, i) => (
+            <div key={i} className="table-row">
+              <div
+                className={`tile picture-cell ${g.id === target.id ? "correct" : "wrong"}`}
+              >
+                <img
+                  src={g.image}
+                  alt={g.name}
+                  className="table-avatar"
+                  onError={(e) => {
+                    e.target.src = "/images/placeholder.png";
+                  }}
+                />
+              </div>
+              <div className={`tile ${getClass("name", g.name)}`}>{g.name}</div>
+              <div className={`tile ${getClass("gender", g.gender)}`}>{g.gender}</div>
+              <div className={`tile ${getClass("orientation", g.orientation)}`}>{g.orientation}</div>
+              <div className={`tile ${getClass("children", g.children)}`}>{g.children}</div>
+              <div className={`tile ${getClass("height", g.height)}`}>
+                {g.height} {g.height === "" ? "" : target.height === "" ? "" :g.height < target.height ? "↑" : g.height > target.height ? "↓" : ""}
+              </div>
+              <div className={`tile ${getClass("job", g.job)}`}>  {g.job.join(", ")}</div>
+              <div className={`tile ${getClass("year", g.year)}`}>
+                {g.year} {g.year === "" ? "" : target.year === "" ? "" : g.year < target.year ? "↑" : g.year > target.year ? "↓" : ""}
+              </div>
+              <div className={`tile ${getClass("place", g.place)}`}>{g.place}</div>
+              <div className={`tile ${getClass("status", g.status)}`}>{g.status}</div>
+              <div className={`tile ${getClass("fame", g.fame)}`}>{g.fame}</div>
+              <div className={`tile ${getClass("generations", g.generations)}`}>  {g.generations.join(", ")}</div>
+              <div className={`tile ${getClass("zodiac", g.zodiac)}`}>{g.zodiac}</div>
             </div>
-            <div className={`tile ${getClass("name", g.name)}`}>{g.name}</div>
-            <div className={`tile ${getClass("job", g.job)}`}>  {g.job.join(", ")}</div>
-            <div className={`tile ${getClass("age", g.age)}`}>
-              {g.age} {g.age < target.age ? "↑" : g.age > target.age ? "↓" : ""}
-            </div>
-            <div className={`tile ${getClass("height", g.height)}`}>
-              {g.height}cm {g.height < target.height ? "↑" : g.height > target.height ? "↓" : ""}
-            </div>
-            <div className={`tile ${getClass("series", g.series)}`}>{g.series}</div>
+            ))}
           </div>
-        ))}
+        </div>
+      </div>
     </div>
-
-  </div>
-</div>
   );
 };
 

@@ -13,7 +13,7 @@
 /* ===== Card ===== */
 .game-card {
   width: 100%;
-  max-width: 48rem;
+  max-width: 55rem;
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(10px);
   border-radius: 1.25rem;
@@ -101,15 +101,43 @@
 }
 
 /* ===== Table ===== */
-.table {
+.table-wrapper {
   width: 100%;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.table {
+  /*width: 100%;*/
+  min-width: 1024px; /* important */
+}
+
+.tile,
+.table-header > div {
+  /*white-space: nowrap;*/
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.875rem;
 }
 
 .table-header,
 .table-row {
   display: grid;
-  grid-template-columns: 64px repeat(5, 1fr);
-  gap: 0.5rem;
+  grid-template-columns:
+    56px   /* picture */
+    130px  /* name */
+    45px   /* gender */
+    85px  /* orientation */
+    60px   /* children */
+    85px   /* height */
+    150px  /* job */
+    70px   /* year */
+    110px  /* place */
+    60px   /* DoA */
+    50px   /* fame */
+    110px  /* generations */
+    100px;  /* zodiac */
+  gap: 0.3rem;
   text-align: center;
 }
 
@@ -125,6 +153,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.picture-cell {
+  position: sticky;
+  left: 0;
+  background: #020617;
+  z-index: 2;
+}
+
+.table-header .picture-cell {
+  z-index: 3;
 }
 
 .table-avatar {
@@ -213,4 +252,48 @@
 .highlight {
   color: #60a5fa;
   font-weight: 700;
+}
+
+
+
+/* PHONES */
+@media (max-width: 640px) {
+  .game-card {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 2.2rem;
+  }
+
+  .guess-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .guess-input {
+    width: 100%;
+  }
+
+  .table {
+    min-width: 900px;
+  }
+
+  .tile,
+  .table-header > div {
+    font-size: 0.75rem;
+    padding: 0.35rem;
+  }
+}
+
+/* TABLETS */
+@media (max-width: 1024px) {
+  .table {
+    min-width: 1050px;
+  }
+
+  .tile,
+  .table-header > div {
+    font-size: 0.8rem;
+  }
 }
