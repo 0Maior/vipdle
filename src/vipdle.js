@@ -44,10 +44,27 @@ const VIPdle = () => {
       return;
     }
 
-    const matches = CHARACTERS.filter(c =>
-      c.name.toLowerCase().startsWith(value.toLowerCase())
-    );
+    const lowerValue = value.toLowerCase();
 
+    const matches = CHARACTERS.filter((c) => {
+      // normalize to array of names
+      const names = Array.isArray(c.names)
+        ? c.names
+        : Array.isArray(c.name)
+        ? c.name
+        : [c.name];
+
+      return names.some((fullName) => {
+        // split name into words
+        const words = fullName.toLowerCase().split(/\s+/);
+
+        // match if ANY word starts with input
+        return words.some((word) =>
+          word.startsWith(lowerValue)
+        );
+      });
+    });
+    
     setSuggestions(matches);
   };
 
