@@ -118,13 +118,20 @@ const VIPdle = () => {
   const getClass = (attr, value) => {
     // JOB: partial match allowed
     if (attr === "job") {
-      const matches = value.filter(job => target.job.includes(job)).length;
+      const targetJobs = target.job.map(normalize);
+      const guessJobs = value.map(normalize);
 
-      if (matches === target.job.length && value.length === target.job.length)
-        return "correct";
+      const intersectionCount = guessJobs.filter(job =>
+        targetJobs.includes(job)
+      ).length;
 
-      if (matches > 0)
-        return "close";
+      const isExactMatch =
+        intersectionCount === targetJobs.length &&
+        intersectionCount === guessJobs.length;
+
+      if (isExactMatch) return "correct";
+
+      if (intersectionCount > 0) return "close";
 
       return "wrong";
     }
@@ -194,7 +201,13 @@ const VIPdle = () => {
   return (
     <div className="app-bg">
       <div className="game-card">
-        <h1 className="title">VIP dle</h1>
+        <div className="logo-wrapper">
+          <img
+            src={`${process.env.PUBLIC_URL}/images/vipdle_logo_transp.png`}
+            alt="VIPdle"
+            className="vipdle-logo"
+          />
+        </div>
         <p className="subtitle">
           Daily character · {new Date().toLocaleDateString()}
         </p>
