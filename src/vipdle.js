@@ -44,7 +44,7 @@ const VIPdle = () => {
       return;
     }
 
-    const lowerValue = value.toLowerCase();
+    const normalizedValue = normalize(value);
 
     const matches = CHARACTERS.filter((c) => {
       // normalize to array of names
@@ -55,17 +55,19 @@ const VIPdle = () => {
         : [c.name];
 
       return names.some((fullName) => {
-        // split name into words
-        const words = fullName.toLowerCase().split(/\s+/);
+        const normalizedName = normalize(fullName);
 
-        // match if ANY word starts with input
+        // split into words AFTER normalization
+        const words = normalizedName.split(/\s+/);
+
         return words.some((word) =>
-          word.startsWith(lowerValue)
+          word.startsWith(normalizedValue)
         );
       });
     });
     
     setSuggestions(matches);
+    setShowDropdown(true);
   };
 
   const handleFocus = () => {
@@ -110,6 +112,7 @@ const VIPdle = () => {
 
     const index = hash % CHARACTERS.length;
     return CHARACTERS[index];
+    //return CHARACTERS[15];
   };
 
   const getClass = (attr, value) => {
@@ -136,6 +139,17 @@ const VIPdle = () => {
         return "close";
 
       return "wrong";
+    }
+
+    if (attr === "fame" || attr === "children") {
+      if (value === target[attr]) return "correct";
+      else return "wrong";
+    }
+
+    if (attr === "height") {
+      if (value === target[attr]) return "correct";
+      else if (typeof value === "number" && Math.abs(value - target[attr]) <= 0.1) return "close";
+      else return "wrong";
     }
 
     // default behavior
@@ -170,6 +184,12 @@ const VIPdle = () => {
       </>
     );
   };
+
+  const normalize = (str) =>
+    str
+      .toLowerCase()
+      .normalize("NFD")              // separate accents
+      .replace(/[\u0300-\u036f]/g, ""); // remove accents
 
   return (
     <div className="app-bg">
