@@ -201,11 +201,11 @@ const VIPdle = () => {
                       onMouseDown={() => selectSuggestion(c)}
                     >
                       <img
-                        src={c.image}
+                        src={`${process.env.PUBLIC_URL}/images/${c.image}`}
                         alt={c.name}
                         className="avatar"
                         onError={(e) => {
-                          e.target.src = "/images/placeholder.png";
+                          e.target.src = `${process.env.PUBLIC_URL}/images/placeholder.png`;
                         }}
                       />
                       <span>{highlightMatch(c.name, guess)}</span>
@@ -251,11 +251,11 @@ const VIPdle = () => {
                 className={`tile picture-cell ${g.id === target.id ? "correct" : "wrong"}`}
               >
                 <img
-                  src={g.image}
+                  src={`${process.env.PUBLIC_URL}/images/${g.image}`}
                   alt={g.name}
                   className="table-avatar"
                   onError={(e) => {
-                    e.target.src = "/images/placeholder.png";
+                    e.target.src = `${process.env.PUBLIC_URL}/images/placeholder.png`;
                   }}
                 />
               </div>
