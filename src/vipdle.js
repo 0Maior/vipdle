@@ -1,6 +1,7 @@
 import "./vipdle.css";
 import React, { useState, useEffect } from 'react';
 import { CHARACTERS } from "./data/database";
+import emailjs from "@emailjs/browser";
 
 const VIPdle = () => {
   const [target, setTarget] = useState(null);
@@ -10,6 +11,12 @@ const VIPdle = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [showDropdown, setShowDropdown] = useState(false);
+
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportCharacter, setReportCharacter] = useState("");
+  const [reportField, setReportField] = useState("");
+  const [reportValue, setReportValue] = useState("");
+  const [reportSource, setReportSource] = useState("");
 
 
   // Initialize game: Pick a random character
@@ -192,6 +199,33 @@ const VIPdle = () => {
     );
   };
 
+  const sendDatabaseReport = () => {
+    emailjs.send(
+      "service_vipdle",
+      "template_vipdle",
+      {
+        date: new Date().toISOString(),
+        character: reportCharacter,
+        field: reportField,
+        correct_value: reportValue,
+        source: reportSource || "No source provided",
+      },
+      "N4WlxwXn2-zFM0ThR"
+    )
+    .then(() => {
+      alert("Thanks! Report sent 🙏");
+      setShowReportModal(false);
+      setReportCharacter("");
+      setReportField("");
+      setReportValue("");
+      setReportSource("");
+    })
+    .catch((err) => {
+      console.error(err);
+      alert("Failed to send report 😢");
+    });
+  };
+
   const normalize = (str) =>
     str
       .toLowerCase()
@@ -312,7 +346,108 @@ const VIPdle = () => {
             ))}
           </div>
         </div>
+        <button
+          className="report-open-btn"
+          onClick={() => setShowReportModal(true)}
+        >
+          🐞 Report database error
+        </button>
       </div>
+    
+      {showReportModal && (
+        <div className="modal-overlay" onClick={() => setShowReportModal(false)}>
+          <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>Report database error</h2>
+
+            {/* Character */}
+            <label>
+              Character
+              <select
+                value={reportCharacter}
+                onChange={(e) => setReportCharacter(e.target.value)}
+              >
+                <option value="">Select character</option>
+                {CHARACTERS.map((c) => (
+                  <option key={c.id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {/* Field */}
+            <label>
+              Field
+              <select
+                value={reportField}
+                onChange={(e) => setReportField(e.target.value)}
+              >
+                <option value="">Select field</option>
+                <option value="name">Name</option>
+                <option value="gender">Gender</option>
+                <option value="orientation">Sexuality</option>
+                <option value="children">Children</option>
+                <option value="height">Height</option>
+                <option value="job">Job</option>
+                <option value="year">Birth year</option>
+                <option value="place">Birth place</option>
+                <option value="status">DoA</option>
+                <option value="fame">Fame rate</option>
+                <option value="generations">Fame generations</option>
+                <option value="zodiac">Zodiac</option>
+                <option value="image">Image</option>
+              </select>
+            </label>
+
+            {/* Correct value */}
+            <label>
+              Correct value
+              <input
+                type="text"
+                value={reportValue}
+                onChange={(e) => setReportValue(e.target.value)}
+                placeholder="Enter the correct value"
+              />
+            </label>
+
+            {/* Source */}
+            <label>
+              Reference link
+              <input
+                type="url"
+                value={reportSource}
+                onChange={(e) => setReportSource(e.target.value)}
+                placeholder="https://..."
+              />
+            </label>
+
+            {/* Actions */}
+            <div className="modal-actions">
+              <button
+                className="modal-cancel"
+                onClick={() => setShowReportModal(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="modal-send"
+                onClick={sendDatabaseReport}
+                disabled={
+                  !reportCharacter ||
+                  !reportField ||
+                  !reportValue
+                }
+              >
+                Send report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

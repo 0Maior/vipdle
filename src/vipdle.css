@@ -301,6 +301,83 @@
   font-weight: 700;
 }
 
+/* REPORT Database ERRO R*/
+.report-open-btn {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: transparent;
+  border: 1px dashed var(--gold);
+  color: var(--gold);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-card);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--gold);
+}
+
+.modal h2 {
+  margin-bottom: 1rem;
+  color: var(--gold-soft);
+}
+
+.modal label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.modal input,
+.modal select {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: var(--bg-dark);
+  border: 1px solid #475569;
+  color: #e5e7eb;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.modal-cancel {
+  background: transparent;
+  border: 1px solid #64748b;
+  color: #cbd5f5;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+}
+
+.modal-send {
+  background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+  color: #020617;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: none;
+}
 
 
 /* PHONES */
