@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { CHARACTERS } from "./data/database";
 import emailjs from "@emailjs/browser";
 
+const RATE_LIMIT_MS = 60 * 1000; // 1 minute
+
 const VIPdle = () => {
   const [target, setTarget] = useState(null);
   const [guess, setGuess] = useState("");
@@ -17,7 +19,8 @@ const VIPdle = () => {
   const [reportField, setReportField] = useState("");
   const [reportValue, setReportValue] = useState("");
   const [reportSource, setReportSource] = useState("");
-
+  const [isSendingReport, setIsSendingReport] = useState(false);
+  
 
   // Initialize game: Pick a random character
   useEffect(() => {
@@ -199,31 +202,132 @@ const VIPdle = () => {
     );
   };
 
+  const getCharacterByName = (name) =>
+  CHARACTERS.find((c) => c.name === name);
+
   const sendDatabaseReport = () => {
-    emailjs.send(
-      process.env.REACT_APP_EMAILJS_SERVICE_ID,
-      process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
-      {
-        date: new Date().toISOString(),
-        character: reportCharacter,
-        field: reportField,
-        correct_value: reportValue,
-        source: reportSource || "No source provided",
-      },
-      process.env.REACT_APP_EMAILJS_PUBLIC_KEY
-    )
-    .then(() => {
-      alert("Thanks! Report sent 🙏");
-      setShowReportModal(false);
-      setReportCharacter("");
-      setReportField("");
-      setReportValue("");
-      setReportSource("");
-    })
-    .catch((err) => {
-      console.error(err);
-      alert("Failed to send report 😢");
-    });
+    if (!canSendReport()) {
+      alert("Please wait before sending another report ⏳");
+      return;
+    }
+
+    if (!isValidUrl(reportSource)) {
+      alert("Please enter a valid URL (http:// or https://)");
+      return;
+    }
+
+    const character = getCharacterByName(reportCharacter);
+
+    if (!character) {
+      alert("Character not found in database");
+      return;
+    }
+
+    if (!isValidValueForField(reportField, reportValue)) {
+      alert("The value format is not valid for this field");
+      return;
+    }
+
+    if (isSameAsDatabase(character, reportField, reportValue)) {
+      alert("This value is already correct in the database");
+      return;
+    }
+
+    setIsSendingReport(true);
+
+    emailjs
+      .send(
+        process.env.REACT_APP_EMAILJS_SERVICE_ID,
+        process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+        {
+          date: new Date().toISOString(),
+          character: reportCharacter,
+          field: reportField,
+          correct_value: reportValue,
+          source: reportSource || "No source provided",
+        },
+        process.env.REACT_APP_EMAILJS_PUBLIC_KEY
+      )
+      .then(() => {
+        localStorage.setItem(
+          "vipdle_last_report_time",
+          Date.now().toString()
+        );
+
+        alert("Thanks! Report sent 🙏");
+        setShowReportModal(false);
+        setReportCharacter("");
+        setReportField("");
+        setReportValue("");
+        setReportSource("");
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to send report 😢");
+      })
+      .finally(() => {
+        setIsSendingReport(false);
+      });
+  };
+
+  const isValidValueForField = (field, value) => {
+    if (!value) return false;
+
+    switch (field) {
+      case "height":
+      case "year":
+      case "fame":
+      case "children":
+        return !isNaN(Number(value));
+
+      case "job":
+      case "generations":
+        // comma-separated list
+        return value.split(",").every(v => v.trim().length > 0);
+
+      case "image":
+        return /\.(png|jpg|jpeg|webp)$/i.test(value);
+
+      default:
+        return value.trim().length > 0;
+    }
+  };
+
+  const isSameAsDatabase = (character, field, reportedValue) => {
+    const dbValue = character[field];
+
+    // Convert reported value to comparable form
+    let parsedReported = reportedValue;
+
+    if (Array.isArray(dbValue)) {
+      parsedReported = reportedValue
+        .split(",")
+        .map(v => v.trim());
+    } else if (typeof dbValue === "number") {
+      parsedReported = Number(reportedValue);
+    }
+
+    return (
+      normalizeValue(dbValue) ===
+      normalizeValue(parsedReported)
+    );
+  };
+
+  const canSendReport = () => {
+    const lastSent = localStorage.getItem("vipdle_last_report_time");
+    if (!lastSent) return true;
+
+    return Date.now() - Number(lastSent) > RATE_LIMIT_MS;
+  };
+
+  const isValidUrl = (url) => {
+    if (!url) return true; // source is optional
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch {
+      return false;
+    }
   };
 
   const normalize = (str) =>
@@ -231,6 +335,16 @@ const VIPdle = () => {
       .toLowerCase()
       .normalize("NFD")              // separate accents
       .replace(/[\u0300-\u036f]/g, ""); // remove accents
+
+  const normalizeValue = (val) => {
+    if (Array.isArray(val)) {
+      return val.map(normalize).sort().join(",");
+    }
+    if (typeof val === "number") {
+      return val.toString();
+    }
+    return normalize(val);
+  };
 
   return (
     <div className="app-bg">
@@ -437,12 +551,13 @@ const VIPdle = () => {
                 className="modal-send"
                 onClick={sendDatabaseReport}
                 disabled={
+                  isSendingReport ||
                   !reportCharacter ||
                   !reportField ||
                   !reportValue
                 }
               >
-                Send report
+                {isSendingReport ? "Sending..." : "Send report"}
               </button>
             </div>
           </div>

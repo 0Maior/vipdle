@@ -10,6 +10,10 @@
   --border-dark: #334155;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* ===== Page ===== */
 .app-bg {
   min-height: 100vh;
@@ -77,6 +81,7 @@
 
 .guess-input {
   width: 16rem;
+  max-width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
   background: #020617;
@@ -397,6 +402,7 @@
 
   .guess-input {
     width: 100%;
+    max-width: 100%;
   }
 
   .table {
