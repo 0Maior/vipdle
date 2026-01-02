@@ -201,8 +201,8 @@ const VIPdle = () => {
 
   const sendDatabaseReport = () => {
     emailjs.send(
-      "service_vipdle",
-      "template_vipdle",
+      process.env.REACT_APP_EMAILJS_SERVICE_ID,
+      process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
       {
         date: new Date().toISOString(),
         character: reportCharacter,
@@ -210,7 +210,7 @@ const VIPdle = () => {
         correct_value: reportValue,
         source: reportSource || "No source provided",
       },
-      "N4WlxwXn2-zFM0ThR"
+      process.env.REACT_APP_EMAILJS_PUBLIC_KEY
     )
     .then(() => {
       alert("Thanks! Report sent 🙏");
