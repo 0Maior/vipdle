@@ -55,23 +55,19 @@ const VIPdle = () => {
     }
 
     const normalizedValue = normalize(value);
+    const searchTokens = normalizedValue.split(" ");
 
     const matches = CHARACTERS.filter((c) => {
-      // normalize to array of names
       const names = Array.isArray(c.names)
         ? c.names
-        : Array.isArray(c.name)
-        ? c.name
         : [c.name];
 
       return names.some((fullName) => {
         const normalizedName = normalize(fullName);
 
-        // split into words AFTER normalization
-        const words = normalizedName.split(/\s+/);
-
-        return words.some((word) =>
-          word.startsWith(normalizedValue)
+        // ALL search tokens must appear somewhere in the name
+        return searchTokens.every(token =>
+          normalizedName.includes(token)
         );
       });
     });
@@ -333,8 +329,12 @@ const VIPdle = () => {
   const normalize = (str) =>
     str
       .toLowerCase()
-      .normalize("NFD")              // separate accents
-      .replace(/[\u0300-\u036f]/g, ""); // remove accents
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // remove accents
+      .replace(/["()]/g, "")          // remove quotes & parentheses
+      .replace(/[^a-z0-9\s]/g, "")    // remove other punctuation
+      .replace(/\s+/g, " ")           // collapse spaces
+      .trim();
 
   const normalizeValue = (val) => {
     if (Array.isArray(val)) {
