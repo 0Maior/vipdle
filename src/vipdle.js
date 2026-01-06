@@ -2,6 +2,7 @@ import "./vipdle.css";
 import React, { useState, useEffect } from 'react';
 import { CHARACTERS } from "./data/database";
 import emailjs from "@emailjs/browser";
+import Tooltip from "./Tooltip";
 
 const RATE_LIMIT_MS = 60 * 1000; // 1 minute
 
@@ -411,19 +412,35 @@ const VIPdle = () => {
         <div className="table-wrapper">
           <div className="table">
             <div className="table-header">
-              <div>Picture</div>
-              <div>Name</div>
-              <div>Gender</div>
-              <div>Sexuality</div>
-              <div>Children</div>
-              <div>Height</div>
-              <div>Job</div>
-              <div>Birth Year</div>
-              <div>Birth Place</div>
-              <div>DoA</div>
-              <div>Fame rate</div>
-              <div>Fame for generations</div>
-              <div>Zodiac</div>
+              <div className="table-header-cell has-tooltip"> Foto </div>
+              <div className="table-header-cell has-tooltip"> Nome </div>
+              <div className="table-header-cell has-tooltip"> Sexo </div>
+              <div className="table-header-cell has-tooltip"> Orient. </div>
+              <div className="table-header-cell has-tooltip"> Filhos </div>
+              <div className="table-header-cell has-tooltip"> Altura </div>
+              <div className="table-header-cell has-tooltip"> Profissão
+                <Tooltip content="Principal ocupação pública da personagem">
+                  <span className="help-icon">ℹ️</span>
+                </Tooltip>
+              </div>
+              <div className="table-header-cell has-tooltip"> Nasc. </div>
+              <div className="table-header-cell has-tooltip"> Distrito </div>
+              <div className="table-header-cell has-tooltip"> DoA
+                <Tooltip content="Dead or Alive">
+                  <span className="help-icon">ℹ️</span>
+                </Tooltip>
+              </div>
+              <div className="table-header-cell has-tooltip"> Fama
+                <Tooltip content="Nível de reconhecimento público: 1=muito alto, 2=médio, 3=baixo">
+                  <span className="help-icon">ℹ️</span>
+                </Tooltip>
+              </div>
+              <div className="table-header-cell has-tooltip"> Gerações
+                <Tooltip content="Gerações que conhecem melhor a personagem">
+                  <span className="help-icon">ℹ️</span>
+                </Tooltip>
+              </div>
+              <div className="table-header-cell has-tooltip"> Zodíaco </div>
             </div>
 
             {guesses.map((g, i) => (
