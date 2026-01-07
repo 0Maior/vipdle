@@ -1,12 +1,15 @@
 import "./vipdle.css";
 import React, { useState, useEffect } from 'react';
-import { CHARACTERS } from "./data/database";
+//import { CHARACTERS } from "./data/database";
 import emailjs from "@emailjs/browser";
 import Tooltip from "./Tooltip";
+import { GAME_MODES } from "./gameModes";
 
 const RATE_LIMIT_MS = 60 * 1000; // 1 minute
 
 const VIPdle = () => {
+  const [gameMode, setGameMode] = useState(GAME_MODES[0]);
+  const [characters, setCharacters] = useState(GAME_MODES[0].getCharacters());
   const [target, setTarget] = useState(null);
   const [guess, setGuess] = useState("");
   const [guesses, setGuesses] = useState([]);
@@ -21,16 +24,24 @@ const VIPdle = () => {
   const [reportValue, setReportValue] = useState("");
   const [reportSource, setReportSource] = useState("");
   const [isSendingReport, setIsSendingReport] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
   
 
   // Initialize game: Pick a random character
   useEffect(() => {
-    setTarget(getDailyCharacter());
-  }, []);
+    const list = gameMode.getCharacters();
+    setCharacters(list);
+    setTarget(getDailyCharacter(list));
+    setGuesses([]);
+    setGuess("");
+    setGameOver(false);
+  }, [gameMode]);
+
 
   const handleGuess = (e) => {
     e.preventDefault();
-    const foundChar = CHARACTERS.find(c => c.name.toLowerCase() === guess.toLowerCase());
+    const foundChar = characters.find(c => c.name.toLowerCase() === guess.toLowerCase());
     
     if (foundChar) {
       setGuesses([foundChar, ...guesses]);
@@ -51,14 +62,14 @@ const VIPdle = () => {
     setActiveIndex(-1);
 
     if (!value) {
-      setSuggestions(CHARACTERS);
+      setSuggestions(characters);
       return;
     }
 
     const normalizedValue = normalize(value);
     const searchTokens = normalizedValue.split(" ");
 
-    const matches = CHARACTERS.filter((c) => {
+    const matches = characters.filter((c) => {
       const names = Array.isArray(c.names)
         ? c.names
         : [c.name];
@@ -78,7 +89,7 @@ const VIPdle = () => {
   };
 
   const handleFocus = () => {
-    setSuggestions(CHARACTERS);
+    setSuggestions(characters);
     setShowDropdown(true);
   };
 
@@ -105,22 +116,15 @@ const VIPdle = () => {
     }
   };
 
-  const getDailyCharacter = () => {
-    const today = new Date();
-
-    // Normalize to UTC so everyone gets the same day
-    const dateString = today.toISOString().split("T")[0]; // YYYY-MM-DD
-
-    // Turn date into a number (simple hash)
+  const getDailyCharacter = (list) => {
+    const dateString = new Date().toISOString().split("T")[0];
     let hash = 0;
     for (let i = 0; i < dateString.length; i++) {
       hash += dateString.charCodeAt(i);
     }
-
-    const index = hash % CHARACTERS.length;
-    return CHARACTERS[index];
-    //return CHARACTERS[15];
+    return list[hash % list.length];
   };
+
 
   const getClass = (attr, value) => {
     // JOB: partial match allowed
@@ -200,7 +204,7 @@ const VIPdle = () => {
   };
 
   const getCharacterByName = (name) =>
-  CHARACTERS.find((c) => c.name === name);
+  characters.find((c) => c.name === name);
 
   const sendDatabaseReport = () => {
     if (!canSendReport()) {
@@ -357,6 +361,12 @@ const VIPdle = () => {
             className="vipdle-logo"
           />
         </div>
+        <button
+          className="settings-btn"
+          onClick={() => setShowSettings(true)}
+        >
+          ⚙️
+        </button>
         <p className="subtitle">
           Daily character · {new Date().toLocaleDateString()}
         </p>
@@ -415,7 +425,7 @@ const VIPdle = () => {
               <div className="table-header-cell has-tooltip"> Foto </div>
               <div className="table-header-cell has-tooltip"> Nome </div>
               <div className="table-header-cell has-tooltip"> Sexo </div>
-              <div className="table-header-cell has-tooltip"> Orient. </div>
+              {/*<div className="table-header-cell has-tooltip"> Orient. </div>*/}
               <div className="table-header-cell has-tooltip"> Filhos </div>
               <div className="table-header-cell has-tooltip"> Altura </div>
               <div className="table-header-cell has-tooltip"> Profissão
@@ -459,7 +469,7 @@ const VIPdle = () => {
               </div>
               <div className={`tile ${getClass("name", g.name)}`}>{g.name}</div>
               <div className={`tile ${getClass("gender", g.gender)}`}>{g.gender}</div>
-              <div className={`tile ${getClass("orientation", g.orientation)}`}>{g.orientation}</div>
+            {/*<div className={`tile ${getClass("orientation", g.orientation)}`}>{g.orientation}</div>*/}
               <div className={`tile ${getClass("children", g.children)}`}>{g.children}</div>
               <div className={`tile ${getClass("height", g.height)}`}>
                 {g.height} {g.height === "" ? "" : target.height === "" ? "" :g.height < target.height ? "↑" : g.height > target.height ? "↓" : ""}
@@ -501,7 +511,7 @@ const VIPdle = () => {
                 onChange={(e) => setReportCharacter(e.target.value)}
               >
                 <option value="">Select character</option>
-                {CHARACTERS.map((c) => (
+                {characters.map((c) => (
                   <option key={c.id} value={c.name}>
                     {c.name}
                   </option>
@@ -580,6 +590,31 @@ const VIPdle = () => {
           </div>
         </div>
       )}
+
+      {showSettings && (
+        <div className="modal-overlay" onClick={() => setShowSettings(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Game mode</h2>
+
+            {GAME_MODES.map((mode) => (
+              <button
+                key={mode.id}
+                className={`mode-btn ${
+                  mode.id === gameMode.id ? "active" : ""
+                }`}
+                onClick={() => {
+                  setGameMode(mode);
+                  setShowSettings(false);
+                }}
+              >
+                <strong>{mode.name}</strong>
+                <span>{mode.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

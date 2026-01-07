@@ -136,7 +136,7 @@
     56px    /*Photo*/
     130px   /*Name*/
     45px    /*Sexo*/
-    85px    /*Orient.*/
+    /*85px*/    /*Orient.*/
     60px    /*Filhos*/
     85px    /*Altura*/
     150px   /*Profissão*/
@@ -358,6 +358,42 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
+}
+
+/* SETTINGS */
+.settings-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+}
+
+.mode-btn {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #475569;
+  background: var(--bg-dark);
+  color: #e5e7eb;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mode-btn span {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.mode-btn.active {
+  border-color: var(--gold);
+  background: rgba(212, 175, 55, 0.15);
 }
 
 
