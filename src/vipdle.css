@@ -30,6 +30,7 @@
 .game-card {
   width: 100%;
   max-width: 80rem;
+  position: relative;
   background: var(--bg-card);
   /*backdrop-filter: blur(10px);*/
   border-radius: 1.25rem;
@@ -134,18 +135,18 @@
   display: grid;
   grid-template-columns:
     56px    /*Photo*/
-    130px   /*Name*/
-    45px    /*Sexo*/
+    150px   /*130px Name*/
+    70px    /*45px Sexo*/
     /*85px*/    /*Orient.*/
-    60px    /*Filhos*/
+    70px    /*60px Filhos*/
     85px    /*Altura*/
     150px   /*Profissão*/
     70px    /*Nasc*/
     110px   /*Distrito*/
-    60px    /*DoA*/
-    60px    /*Fame*/
+    70px    /*60px DoA*/
+    70px    /*60px Fame*/
     110px   /*Generations*/
-    100px;  /*Zodiac*/
+    110px;  /*100px Zodiac*/
   gap: 0.4rem;
   text-align: center;
 }
@@ -371,6 +372,7 @@
   border-radius: 0.5rem;
   padding: 0.35rem 0.5rem;
   cursor: pointer;
+  z-index: 5;
 }
 
 .mode-btn {

@@ -354,6 +354,12 @@ const VIPdle = () => {
   return (
     <div className="app-bg">
       <div className="game-card">
+        <button
+          className="settings-btn"
+          onClick={() => setShowSettings(true)}
+        >
+          ⚙️
+        </button>
         <div className="logo-wrapper">
           <img
             src={`${process.env.PUBLIC_URL}/images/vipdle_logo_transp.png`}
@@ -361,12 +367,6 @@ const VIPdle = () => {
             className="vipdle-logo"
           />
         </div>
-        <button
-          className="settings-btn"
-          onClick={() => setShowSettings(true)}
-        >
-          ⚙️
-        </button>
         <p className="subtitle">
           Daily character · {new Date().toLocaleDateString()}
         </p>
