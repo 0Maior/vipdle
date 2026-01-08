@@ -1,15 +1,162 @@
 import "./vipdle.css";
-import React, { useState, useEffect } from 'react';
-//import { CHARACTERS } from "./data/database";
+import React, { useState, useEffect } from "react";
 import emailjs from "@emailjs/browser";
 import Tooltip from "./Tooltip";
 import { GAME_MODES } from "./gameModes";
 
 const RATE_LIMIT_MS = 60 * 1000; // 1 minute
 
+const COLUMN_CONFIG = {
+  picture: {
+    header: "Foto",
+    render: (c) => (
+      <img
+        src={`${process.env.PUBLIC_URL}/images/${c.image}`}
+        alt={c.name}
+        className="table-avatar"
+      />
+    ),
+    getClass: (c, target) =>
+      target && c.id === target.id ? "correct" : "wrong",
+  },
+
+  name: {
+    header: "Nome",
+    render: (c) => c.name,
+    getClass: (c, target, getClass) => getClass("name", c.name),
+  },
+
+  gender: {
+    header: "Sexo",
+    render: (c) => c.gender,
+    getClass: (c, target, getClass) => getClass("gender", c.gender),
+  },
+
+  children: {
+    header: "#Filhos",
+    render: (c) => c.children,
+    getClass: (c, target, getClass) => getClass("children", c.children),
+  },
+
+  height: {
+    header: "Altura",
+    render: (c, target) => {
+      if (!c.height || !target?.height) return c.height ?? "—";
+
+      let arrow = "";
+      if (c.height < target.height) arrow = " ↑";
+      if (c.height > target.height) arrow = " ↓";
+
+      return (
+        <>
+          {c.height}
+          <span className="arrow">{arrow}</span>
+        </>
+      );
+    },
+    getClass: (c, target, getClass) => getClass("height", c.height),
+  },
+
+  job: {
+    header: (
+      <>
+        Profissão
+        <Tooltip content="Principal ocupação pública da personagem">
+          <span className="help-icon">ℹ️</span>
+        </Tooltip>
+      </>
+    ),
+    render: (c) => c.job.join(", "),
+    getClass: (c, target, getClass) => getClass("job", c.job),
+  },
+
+  year: {
+    header: "Nasc.",
+    render: (c, target) => {
+      if (!c.year || !target?.year) return c.year ?? "—";
+
+      let arrow = "";
+      if (c.year < target.year) arrow = " ↑";
+      if (c.year > target.year) arrow = " ↓";
+
+      return (
+        <>
+          {c.year}
+          <span className="arrow">{arrow}</span>
+        </>
+      );
+    },
+    getClass: (c, target, getClass) => getClass("year", c.year),
+  },
+
+  place: {
+    header: "Distrito",
+    render: (c) => c.place,
+    getClass: (c, target, getClass) => getClass("place", c.place),
+  },
+
+  status: {
+    header: "DoA",
+    render: (c) => c.status,
+    getClass: (c, target, getClass) => getClass("status", c.status),
+  },
+
+  fame: {
+    header: (
+      <>
+        Fama
+        <Tooltip content="Nível de reconhecimento público: 1=alto, 2=médio, 3=baixo">
+          <span className="help-icon">ℹ️</span>
+        </Tooltip>
+      </>
+    ),
+    render: (c) => c.fame,
+    getClass: (c, target, getClass) => getClass("fame", c.fame),
+  },
+
+  generations: {
+    header: (
+      <>
+        Gerações
+        <Tooltip content="Gerações que conhecem melhor a personagem">
+          <span className="help-icon">ℹ️</span>
+        </Tooltip>
+      </>
+    ),
+    render: (c) => c.generations.join(", "),
+    getClass: (c, target, getClass) =>
+      getClass("generations", c.generations),
+  },
+
+  zodiac: {
+    header: "Zodíaco",
+    render: (c) => c.zodiac,
+    getClass: (c, target, getClass) => getClass("zodiac", c.zodiac),
+  },
+
+  modespecific: {
+    header: (gameMode) => (
+      <>
+        {gameMode?.modeSpecific?.label ?? "Extra"}
+        {gameMode?.modeSpecific?.tooltip && (
+          <Tooltip content={gameMode.modeSpecific.tooltip}>
+            <span className="help-icon">ℹ️</span>
+          </Tooltip>
+        )}
+      </>
+    ),
+    render: (c) => c.modespecific || "—",
+    getClass: (c, target) =>
+      target && c.modespecific === target.modespecific
+        ? "correct"
+        : "wrong",
+  },
+};
+
 const VIPdle = () => {
-  const [gameMode, setGameMode] = useState(GAME_MODES[0]);
-  const [characters, setCharacters] = useState(GAME_MODES[0].getCharacters());
+  const [gameMode, setGameMode] = useState(GAME_MODES?.[0] ?? null);
+  const [characters, setCharacters] = useState([]);
+
   const [target, setTarget] = useState(null);
   const [guess, setGuess] = useState("");
   const [guesses, setGuesses] = useState([]);
@@ -25,18 +172,20 @@ const VIPdle = () => {
   const [reportSource, setReportSource] = useState("");
   const [isSendingReport, setIsSendingReport] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-
-  
+  const columns = gameMode?.columns ?? [];
 
   // Initialize game: Pick a random character
   useEffect(() => {
-    const list = gameMode.getCharacters();
+    if (!gameMode) return;
+
+    const list = gameMode.getCharacters?.() ?? [];
     setCharacters(list);
-    setTarget(getDailyCharacter(list));
+    setTarget(list.length ? getDailyCharacter(list) : null);
     setGuesses([]);
     setGuess("");
     setGameOver(false);
   }, [gameMode]);
+
 
 
   const handleGuess = (e) => {
@@ -127,6 +276,8 @@ const VIPdle = () => {
 
 
   const getClass = (attr, value) => {
+    if (!target) return "";
+    
     // JOB: partial match allowed
     if (attr === "job") {
       const targetJobs = target.job.map(normalize);
@@ -420,70 +571,68 @@ const VIPdle = () => {
 
         {/* Results Table */}
         <div className="table-wrapper">
-          <div className="table">
+          <div className="table"
+            style={{
+              gridTemplateColumns: columns
+                .map((col) => {
+                  if (col === "picture") return "56px";
+                  if (col === "name") return "130px";
+                  if (col === "gender") return "45px";
+                  //if (col === "orientation") return "85px";
+                  if (col === "children") return "60px";
+                  if (col === "height") return "85px";
+                  if (col === "job") return "150px";
+                  if (col === "year") return "70px";
+                  if (col === "place") return "100px";
+                  if (col === "status") return "60px";
+                  if (col === "fame") return "60px";
+                  if (col === "generations") return "110px";
+                  if (col === "zodiac") return "100px";
+                  if (col === "modespecific") return "150px";
+                  return "80px";
+                })
+                .join(" "),
+            }}
+          >
             <div className="table-header">
-              <div className="table-header-cell has-tooltip"> Foto </div>
-              <div className="table-header-cell has-tooltip"> Nome </div>
-              <div className="table-header-cell has-tooltip"> Sexo </div>
-              {/*<div className="table-header-cell has-tooltip"> Orient. </div>*/}
-              <div className="table-header-cell has-tooltip"> Filhos </div>
-              <div className="table-header-cell has-tooltip"> Altura </div>
-              <div className="table-header-cell has-tooltip"> Profissão
-                <Tooltip content="Principal ocupação pública da personagem">
-                  <span className="help-icon">ℹ️</span>
-                </Tooltip>
-              </div>
-              <div className="table-header-cell has-tooltip"> Nasc. </div>
-              <div className="table-header-cell has-tooltip"> Distrito </div>
-              <div className="table-header-cell has-tooltip"> DoA
-                <Tooltip content="Dead or Alive">
-                  <span className="help-icon">ℹ️</span>
-                </Tooltip>
-              </div>
-              <div className="table-header-cell has-tooltip"> Fama
-                <Tooltip content="Nível de reconhecimento público: 1=muito alto, 2=médio, 3=baixo">
-                  <span className="help-icon">ℹ️</span>
-                </Tooltip>
-              </div>
-              <div className="table-header-cell has-tooltip"> Gerações
-                <Tooltip content="Gerações que conhecem melhor a personagem">
-                  <span className="help-icon">ℹ️</span>
-                </Tooltip>
-              </div>
-              <div className="table-header-cell has-tooltip"> Zodíaco </div>
+              {columns.map((col) => {
+                const config = COLUMN_CONFIG[col];
+                if (!config) {
+                  console.error("Missing column config:", col);
+                  return <div key={col} className="table-header-cell">?</div>;
+                }
+                return (
+                  <div key={col} className="table-header-cell">
+                    {typeof config.header === "function"
+                      ? config.header(gameMode)
+                      : config.header}
+                  </div>
+                );
+              })}
             </div>
 
+            
             {guesses.map((g, i) => (
-            <div key={i} className="table-row">
-              <div
-                className={`tile picture-cell ${g.id === target.id ? "correct" : "wrong"}`}
-              >
-                <img
-                  src={`${process.env.PUBLIC_URL}/images/${g.image}`}
-                  alt={g.name}
-                  className="table-avatar"
-                  onError={(e) => {
-                    e.target.src = `${process.env.PUBLIC_URL}/images/placeholder.png`;
-                  }}
-                />
+              <div key={i} className="table-row">
+                {columns.map((col) => {
+                  const config = COLUMN_CONFIG[col];
+                  if (!config) {
+                    console.error("Missing column config:", col);
+                    return <div key={col} className="tile wrong">—</div>;
+                  }
+
+                  return (
+                    <div
+                      key={col}
+                      className={`tile ${
+                        config.getClass ? config.getClass(g, target, getClass) : ""
+                      }`}
+                    >
+                      {config.render(g, target)}
+                    </div>
+                  );
+                })}
               </div>
-              <div className={`tile ${getClass("name", g.name)}`}>{g.name}</div>
-              <div className={`tile ${getClass("gender", g.gender)}`}>{g.gender}</div>
-            {/*<div className={`tile ${getClass("orientation", g.orientation)}`}>{g.orientation}</div>*/}
-              <div className={`tile ${getClass("children", g.children)}`}>{g.children}</div>
-              <div className={`tile ${getClass("height", g.height)}`}>
-                {g.height} {g.height === "" ? "" : target.height === "" ? "" :g.height < target.height ? "↑" : g.height > target.height ? "↓" : ""}
-              </div>
-              <div className={`tile ${getClass("job", g.job)}`}>  {g.job.join(", ")}</div>
-              <div className={`tile ${getClass("year", g.year)}`}>
-                {g.year} {g.year === "" ? "" : target.year === "" ? "" : g.year < target.year ? "↑" : g.year > target.year ? "↓" : ""}
-              </div>
-              <div className={`tile ${getClass("place", g.place)}`}>{g.place}</div>
-              <div className={`tile ${getClass("status", g.status)}`}>{g.status}</div>
-              <div className={`tile ${getClass("fame", g.fame)}`}>{g.fame}</div>
-              <div className={`tile ${getClass("generations", g.generations)}`}>  {g.generations.join(", ")}</div>
-              <div className={`tile ${getClass("zodiac", g.zodiac)}`}>{g.zodiac}</div>
-            </div>
             ))}
           </div>
         </div>
