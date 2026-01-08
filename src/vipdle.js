@@ -172,6 +172,10 @@ const VIPdle = () => {
   const [reportSource, setReportSource] = useState("");
   const [isSendingReport, setIsSendingReport] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [revealedHints, setRevealedHints] = useState([]);
+
   const columns = gameMode?.columns ?? [];
 
   // Initialize game: Pick a random character
@@ -184,6 +188,8 @@ const VIPdle = () => {
     setGuesses([]);
     setGuess("");
     setGameOver(false);
+    setHintsUsed(0);
+    setRevealedHints([]);
   }, [gameMode]);
 
 
@@ -272,6 +278,21 @@ const VIPdle = () => {
       hash += dateString.charCodeAt(i);
     }
     return list[hash % list.length];
+  };
+
+  const handleHint = () => {
+    if (!target || hintsUsed >= 3) return;
+
+    const hintKey = `hint${hintsUsed + 1}`;
+    const nextHint = target[hintKey];
+
+    if (!nextHint) {
+      setHintsUsed(3); // no more hints available
+      return;
+    }
+
+    setRevealedHints((prev) => [...prev, nextHint]);
+    setHintsUsed((prev) => prev + 1);
   };
 
 
@@ -557,10 +578,31 @@ const VIPdle = () => {
                 </ul>
               )}
             </div>
-            <button className="guess-btn" disabled={gameOver}>
-              Guess
-            </button>
+            <div className="guess-actions">
+              <button className="guess-btn" disabled={gameOver}>
+                Guess
+              </button>
+
+              <button
+                type="button"
+                className="hint-btn"
+                onClick={handleHint}
+                disabled={gameOver || hintsUsed >= 3}
+                title={`Hint (${hintsUsed}/3)`}
+              >
+                💡
+              </button>
+            </div>
           </form>
+        )}
+        {revealedHints.length > 0 && (
+          <div className="hints-box">
+            {revealedHints.map((hint, i) => (
+              <div key={i} className="hint">
+                💡 Hint {i + 1}: {hint}
+              </div>
+            ))}
+          </div>
         )}
 
         {gameOver && (

@@ -97,6 +97,41 @@
   cursor: not-allowed;
 }
 
+.guess-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.hint-btn {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 0.4rem;
+  padding: 0.4rem 0.55rem;
+  cursor: pointer;
+}
+
+.hint-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hints-box {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  border: 1px dashed var(--gold);
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.hint {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+
 /* ===== Win Banner ===== */
 .win-banner {
   margin-bottom: 1.5rem;
