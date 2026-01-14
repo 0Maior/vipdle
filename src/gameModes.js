@@ -52,6 +52,9 @@ export const GAME_MODES = [
     modeSpecific: {
       label: "Music Style",
       tooltip: "Primary music genre or style",
+
+      labelKey: "modespecific_music",
+      tooltipKey: "modespecific_music",
     },
     columns: [
       "picture",
@@ -81,6 +84,9 @@ export const GAME_MODES = [
     modeSpecific: {
       label: "Political Party",
       tooltip: "Main political affiliation",
+      
+      labelKey: "modespecific_politics",
+      tooltipKey: "modespecific_politics",
     },
     columns: [
       "picture",

@@ -3,155 +3,9 @@ import React, { useState, useEffect } from "react";
 import emailjs from "@emailjs/browser";
 import Tooltip from "./Tooltip";
 import { GAME_MODES } from "./gameModes";
+import { TRANSLATIONS } from "./i18n";
 
 const RATE_LIMIT_MS = 60 * 1000; // 1 minute
-
-const COLUMN_CONFIG = {
-  picture: {
-    header: "Foto",
-    render: (c) => (
-      <img
-        src={`${process.env.PUBLIC_URL}/images/${c.image}`}
-        alt={c.name}
-        className="table-avatar"
-      />
-    ),
-    getClass: (c, target) =>
-      target && c.id === target.id ? "correct" : "wrong",
-  },
-
-  name: {
-    header: "Nome",
-    render: (c) => c.name,
-    getClass: (c, target, getClass) => getClass("name", c.name),
-  },
-
-  gender: {
-    header: "Sexo",
-    render: (c) => c.gender,
-    getClass: (c, target, getClass) => getClass("gender", c.gender),
-  },
-
-  children: {
-    header: "#Filhos",
-    render: (c) => c.children,
-    getClass: (c, target, getClass) => getClass("children", c.children),
-  },
-
-  height: {
-    header: "Altura",
-    render: (c, target) => {
-      if (!c.height || !target?.height) return c.height ?? "—";
-
-      let arrow = "";
-      if (c.height < target.height) arrow = " ↑";
-      if (c.height > target.height) arrow = " ↓";
-
-      return (
-        <>
-          {c.height}
-          <span className="arrow">{arrow}</span>
-        </>
-      );
-    },
-    getClass: (c, target, getClass) => getClass("height", c.height),
-  },
-
-  job: {
-    header: (
-      <>
-        Profissão
-        <Tooltip content="Principal ocupação pública da personagem">
-          <span className="help-icon">ℹ️</span>
-        </Tooltip>
-      </>
-    ),
-    render: (c) => c.job.join(", "),
-    getClass: (c, target, getClass) => getClass("job", c.job),
-  },
-
-  year: {
-    header: "Nasc.",
-    render: (c, target) => {
-      if (!c.year || !target?.year) return c.year ?? "—";
-
-      let arrow = "";
-      if (c.year < target.year) arrow = " ↑";
-      if (c.year > target.year) arrow = " ↓";
-
-      return (
-        <>
-          {c.year}
-          <span className="arrow">{arrow}</span>
-        </>
-      );
-    },
-    getClass: (c, target, getClass) => getClass("year", c.year),
-  },
-
-  place: {
-    header: "Distrito",
-    render: (c) => c.place,
-    getClass: (c, target, getClass) => getClass("place", c.place),
-  },
-
-  status: {
-    header: "DoA",
-    render: (c) => c.status,
-    getClass: (c, target, getClass) => getClass("status", c.status),
-  },
-
-  fame: {
-    header: (
-      <>
-        Fama
-        <Tooltip content="Nível de reconhecimento público: 1=alto, 2=médio, 3=baixo">
-          <span className="help-icon">ℹ️</span>
-        </Tooltip>
-      </>
-    ),
-    render: (c) => c.fame,
-    getClass: (c, target, getClass) => getClass("fame", c.fame),
-  },
-
-  generations: {
-    header: (
-      <>
-        Gerações
-        <Tooltip content="Gerações que conhecem melhor a personagem">
-          <span className="help-icon">ℹ️</span>
-        </Tooltip>
-      </>
-    ),
-    render: (c) => c.generations.join(", "),
-    getClass: (c, target, getClass) =>
-      getClass("generations", c.generations),
-  },
-
-  zodiac: {
-    header: "Zodíaco",
-    render: (c) => c.zodiac,
-    getClass: (c, target, getClass) => getClass("zodiac", c.zodiac),
-  },
-
-  modespecific: {
-    header: (gameMode) => (
-      <>
-        {gameMode?.modeSpecific?.label ?? "Extra"}
-        {gameMode?.modeSpecific?.tooltip && (
-          <Tooltip content={gameMode.modeSpecific.tooltip}>
-            <span className="help-icon">ℹ️</span>
-          </Tooltip>
-        )}
-      </>
-    ),
-    render: (c) => c.modespecific || "—",
-    getClass: (c, target) =>
-      target && c.modespecific === target.modespecific
-        ? "correct"
-        : "wrong",
-  },
-};
 
 const VIPdle = () => {
   const [gameMode, setGameMode] = useState(GAME_MODES?.[0] ?? null);
@@ -176,6 +30,169 @@ const VIPdle = () => {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [revealedHints, setRevealedHints] = useState([]);
 
+  const [language, setLanguage] = useState("pt");
+  const t = TRANSLATIONS[language];
+
+  const COLUMN_CONFIG = {
+    picture: {
+      header: t.table.picture,
+      render: (c) => (
+        <img
+          src={`${process.env.PUBLIC_URL}/images/${c.image}`}
+          alt={c.name}
+          className="table-avatar"
+        />
+      ),
+      getClass: (c, target) =>
+        target && c.id === target.id ? "correct" : "wrong",
+    },
+
+    name: {
+      header: t.table.name,
+      render: (c) => c.name,
+      getClass: (c, target, getClass) => getClass("name", c.name),
+    },
+
+    gender: {
+      header: t.table.gender,
+      render: (c) => c.gender,
+      getClass: (c, target, getClass) => getClass("gender", c.gender),
+    },
+
+    children: {
+      header: t.table.children,
+      render: (c) => c.children,
+      getClass: (c, target, getClass) => getClass("children", c.children),
+    },
+
+    height: {
+      header: t.table.height,
+      render: (c, target) => {
+        if (!c.height || !target?.height) return c.height ?? "—";
+
+        let arrow = "";
+        if (c.height < target.height) arrow = " ↑";
+        if (c.height > target.height) arrow = " ↓";
+
+        return (
+          <>
+            {c.height}
+            <span className="arrow">{arrow}</span>
+          </>
+        );
+      },
+      getClass: (c, target, getClass) => getClass("height", c.height),
+    },
+
+    job: {
+      header: (
+        <>
+          {t.table.job}
+          <Tooltip content={t.tooltips.job_tooltip}>
+            <span className="help-icon">ℹ️</span>
+          </Tooltip>
+        </>
+      ),
+      render: (c) => c.job.join(", "),
+      getClass: (c, target, getClass) => getClass("job", c.job),
+    },
+
+    year: {
+      header: t.table.year,
+      render: (c, target) => {
+        if (!c.year || !target?.year) return c.year ?? "—";
+
+        let arrow = "";
+        if (c.year < target.year) arrow = " ↑";
+        if (c.year > target.year) arrow = " ↓";
+
+        return (
+          <>
+            {c.year}
+            <span className="arrow">{arrow}</span>
+          </>
+        );
+      },
+      getClass: (c, target, getClass) => getClass("year", c.year),
+    },
+
+    place: {
+      header: t.table.place,
+      render: (c) => c.place,
+      getClass: (c, target, getClass) => getClass("place", c.place),
+    },
+
+    status: {
+      header: t.table.status,
+      render: (c) => c.status,
+      getClass: (c, target, getClass) => getClass("status", c.status),
+    },
+
+    fame: {
+      header: (
+        <>
+          {t.table.fame}
+          <Tooltip content={t.tooltips.fame_tooltip}>
+            <span className="help-icon">ℹ️</span>
+          </Tooltip>
+        </>
+      ),
+      render: (c) => c.fame,
+      getClass: (c, target, getClass) => getClass("fame", c.fame),
+    },
+
+    generations: {
+      header: (
+        <>
+          {t.table.generations}
+          <Tooltip content={t.tooltips.generations_tooltip}>
+            <span className="help-icon">ℹ️</span>
+          </Tooltip>
+        </>
+      ),
+      render: (c) => c.generations.join(", "),
+      getClass: (c, target, getClass) =>
+        getClass("generations", c.generations),
+    },
+
+    zodiac: {
+      header: t.table.zodiac,
+      render: (c) => c.zodiac,
+      getClass: (c, target, getClass) => getClass("zodiac", c.zodiac),
+    },
+
+    modespecific: {
+      header: ({ gameMode, t }) => {
+        const label =
+          t?.table?.[gameMode?.modeSpecific?.labelKey] ??
+          gameMode?.modeSpecific?.labelKey ??
+          "Extra";
+
+        const tooltipText =
+          t?.tooltips?.[gameMode?.modeSpecific?.tooltipKey];
+
+        return (
+          <>
+            {label}
+            {tooltipText && (
+              <Tooltip content={tooltipText}>
+                <span className="help-icon">ℹ️</span>
+              </Tooltip>
+            )}
+          </>
+        );
+      },
+
+      render: (c) => c.modespecific || "—",
+
+      getClass: (c, target) =>
+        target && c.modespecific === target.modespecific
+          ? "correct"
+          : "wrong",
+    },
+  };
+
+
   const columns = gameMode?.columns ?? [];
 
   // Initialize game: Pick a random character
@@ -193,6 +210,23 @@ const VIPdle = () => {
   }, [gameMode]);
 
 
+
+  const getDailyCharacter = (list) => {
+    if (!Array.isArray(list) || list.length === 0) return null;
+
+    // Use UTC date so everyone gets the same result
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    // Simple deterministic hash from date string
+    let hash = 0;
+    for (let i = 0; i < today.length; i++) {
+      hash = (hash << 5) - hash + today.charCodeAt(i);
+      hash |= 0; // force 32-bit
+    }
+
+    const index = Math.abs(hash) % list.length;
+    return list[index];
+  };
 
   const handleGuess = (e) => {
     e.preventDefault();
@@ -269,15 +303,6 @@ const VIPdle = () => {
     if (e.key === "Escape") {
       setShowDropdown(false);
     }
-  };
-
-  const getDailyCharacter = (list) => {
-    const dateString = new Date().toISOString().split("T")[0];
-    let hash = 0;
-    for (let i = 0; i < dateString.length; i++) {
-      hash += dateString.charCodeAt(i);
-    }
-    return list[hash % list.length];
   };
 
   const handleHint = () => {
@@ -532,6 +557,13 @@ const VIPdle = () => {
         >
           ⚙️
         </button>
+        <button
+          className="lang-btn"
+          onClick={() => setLanguage((l) => (l === "pt" ? "en" : "pt"))}
+          title="Change language"
+        >
+          {language === "pt" ? "🇵🇹" : "🇬🇧"}
+        </button>
         <div className="logo-wrapper">
           <img
             src={`${process.env.PUBLIC_URL}/images/vipdle_logo_transp.png`}
@@ -540,7 +572,7 @@ const VIPdle = () => {
           />
         </div>
         <p className="subtitle">
-          Daily character · {new Date().toLocaleDateString()}
+          {t.subtitle} · {new Date().toLocaleDateString()}
         </p>
 
         {/* Input Section */}
@@ -553,7 +585,7 @@ const VIPdle = () => {
                 onChange={handleInputChange}
                 onFocus={handleFocus}
                 onKeyDown={handleKeyDown}
-                placeholder="Enter character name..."
+                placeholder={t.guessinputplaceholder}
               />
 
               {showDropdown && suggestions.length > 0 && (
@@ -580,7 +612,7 @@ const VIPdle = () => {
             </div>
             <div className="guess-actions">
               <button className="guess-btn" disabled={gameOver}>
-                Guess
+                {t.guess}
               </button>
 
               <button
@@ -588,7 +620,7 @@ const VIPdle = () => {
                 className="hint-btn"
                 onClick={handleHint}
                 disabled={gameOver || hintsUsed >= 3}
-                title={`Hint (${hintsUsed}/3)`}
+                title={`${t.hint} (${hintsUsed}/3)`}
               >
                 💡
               </button>
@@ -639,21 +671,36 @@ const VIPdle = () => {
             <div className="table-header">
               {columns.map((col) => {
                 const config = COLUMN_CONFIG[col];
+
                 if (!config) {
                   console.error("Missing column config:", col);
-                  return <div key={col} className="table-header-cell">?</div>;
+                  return (
+                    <div key={col} className="table-header-cell">
+                      ?
+                    </div>
+                  );
                 }
+
+                let header;
+
+                if (typeof config.header === "function") {
+                  // mode-dependent header
+                  header = config.header({ gameMode, t });
+                } else if (typeof config.header === "string") {
+                  // translatable string header
+                  header = t?.table?.[config.header] ?? config.header;
+                } else {
+                  // JSX header (already rendered)
+                  header = config.header;
+                }
+
                 return (
                   <div key={col} className="table-header-cell">
-                    {typeof config.header === "function"
-                      ? config.header(gameMode)
-                      : config.header}
+                    {header}
                   </div>
                 );
               })}
             </div>
-
-            
             {guesses.map((g, i) => (
               <div key={i} className="table-row">
                 {columns.map((col) => {

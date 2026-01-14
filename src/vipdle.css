@@ -58,6 +58,29 @@
   margin-bottom: 2rem;
 }
 
+/* ===== SETTINGS ===== */
+.settings-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+  z-index: 5;
+}
+
+/* ===== LANGUAGE ===== */
+.lang-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+
 /* ===== Input ===== */
 .guess-form {
   display: flex;
@@ -394,20 +417,6 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-}
-
-/* SETTINGS */
-.settings-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: transparent;
-  border: 1px solid var(--gold);
-  color: var(--gold);
-  border-radius: 0.5rem;
-  padding: 0.35rem 0.5rem;
-  cursor: pointer;
-  z-index: 5;
 }
 
 .mode-btn {
