@@ -7,6 +7,169 @@ import { TRANSLATIONS } from "./i18n";
 
 const RATE_LIMIT_MS = 60 * 1000; // 1 minute
 
+
+function mulberry32(seed) {
+  return function () {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hashString(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function seededShuffle(array, seed) {
+  const rng = mulberry32(seed);
+  const result = [...array];
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
+
+function getDailyCharacter(list, salt = "") {
+  if (!Array.isArray(list) || list.length === 0) return null;
+
+  const dateStr = new Date().toISOString().slice(0, 10); // UTC
+  const seed = hashString(`${dateStr}-${salt}`);
+
+  const shuffled = seededShuffle(list, seed);
+  return shuffled[0];
+}
+
+function getNextDailyCharacters(list, days = 20, salt = "") {
+  const results = [];
+  const today = new Date();
+
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+
+    const dateStr = d.toISOString().slice(0, 10);
+    const seed = hashString(`${dateStr}-${salt}`);
+    const shuffled = seededShuffle(list, seed);
+
+    results.push({
+      date: dateStr,
+      character: shuffled[0],
+    });
+  }
+
+  return results;
+}
+
+function normalizeHeightCategory(height, gender) {
+  // Case 1: already a string in DB
+  if (typeof height === "string") {
+    const h = height.toLowerCase().trim();
+
+    if (["alto", "tall"].includes(h)) return "tall";
+    if (["médio", "medio", "average"].includes(h)) return "average";
+    if (["baixo", "short"].includes(h)) return "short";
+
+    return null;
+  }
+
+  // Case 2: numeric height
+  if (typeof height === "number") {
+    if (gender === "M") {
+      if (height >= 1.8) return "tall";
+      if (height >= 1.65) return "average";
+      return "short";
+    }
+
+    if (gender === "F") {
+      if (height >= 1.7) return "tall";
+      if (height >= 1.55) return "average";
+      return "short";
+    }
+  }
+
+  return null;
+}
+
+const STATUS_MAP = {
+  // Portuguese
+  vivo: "alive",
+  morta: "dead",
+  morto: "dead",
+
+  // English
+  alive: "alive",
+  dead: "dead",
+};
+
+function normalizeStatus(value) {
+  if (!value) return null;
+
+  const key = value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  return STATUS_MAP[key] ?? null;
+}
+
+const ZODIAC_MAP = {
+  // Portuguese
+  carneiro: "aries",
+  touro: "taurus",
+  gemeos: "gemini",
+  gémeos: "gemini",
+  caranguejo: "cancer",
+  leao: "leo",
+  leão: "leo",
+  virgem: "virgo",
+  balanca: "libra",
+  balança: "libra",
+  escorpiao: "scorpio",
+  escorpião: "scorpio",
+  sagitario: "sagittarius",
+  sagitário: "sagittarius",
+  capricornio: "capricorn",
+  capricórnio: "capricorn",
+  aquario: "aquarius",
+  aquário: "aquarius",
+  peixes: "pisces",
+
+  // English (already canonical)
+  aries: "aries",
+  taurus: "taurus",
+  gemini: "gemini",
+  cancer: "cancer",
+  leo: "leo",
+  virgo: "virgo",
+  libra: "libra",
+  scorpio: "scorpio",
+  sagittarius: "sagittarius",
+  capricorn: "capricorn",
+  aquarius: "aquarius",
+  pisces: "pisces",
+};
+
+function normalizeZodiac(value) {
+  if (!value) return null;
+
+  const key = value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  return ZODIAC_MAP[key] ?? null;
+}
+
+
 const VIPdle = () => {
   const [gameMode, setGameMode] = useState(GAME_MODES?.[0] ?? null);
   const [characters, setCharacters] = useState([]);
@@ -67,22 +230,15 @@ const VIPdle = () => {
 
     height: {
       header: t.table.height,
-      render: (c, target) => {
-        if (!c.height || !target?.height) return c.height ?? "—";
+      render: (c) => {
+        const category = normalizeHeightCategory(c.height, c.gender);
+        if (!category) return "Unknown";
 
-        let arrow = "";
-        if (c.height < target.height) arrow = " ↑";
-        if (c.height > target.height) arrow = " ↓";
-
-        return (
-          <>
-            {c.height}
-            <span className="arrow">{arrow}</span>
-          </>
-        );
+        return t.height_labels?.[category] ?? category;
       },
-      getClass: (c, target, getClass) => getClass("height", c.height),
+      getClass: (c, target, getClass) => getClass("height", c),
     },
+
 
     job: {
       header: (
@@ -124,8 +280,13 @@ const VIPdle = () => {
 
     status: {
       header: t.table.status,
-      render: (c) => c.status,
-      getClass: (c, target, getClass) => getClass("status", c.status),
+      render: (c) => {
+        const s = normalizeStatus(c.status);
+        if (!s) return "Unknown";
+
+        return t.status?.[s] ?? s;
+      },
+      getClass: (c, target, getClass) => getClass("status", c),
     },
 
     fame: {
@@ -157,9 +318,15 @@ const VIPdle = () => {
 
     zodiac: {
       header: t.table.zodiac,
-      render: (c) => c.zodiac,
-      getClass: (c, target, getClass) => getClass("zodiac", c.zodiac),
+      render: (c) => {
+        const z = normalizeZodiac(c.zodiac);
+        if (!z) return "Unknown";
+
+        return t.zodiac?.[z] ?? z;
+      },
+      getClass: (c, target, getClass) => getClass("zodiac", c),
     },
+
 
     modespecific: {
       header: ({ gameMode, t }) => {
@@ -183,7 +350,7 @@ const VIPdle = () => {
         );
       },
 
-      render: (c) => c.modespecific || "—",
+      render: (c) => c.modespecific.join(", ") || "—",
 
       getClass: (c, target) =>
         target && c.modespecific === target.modespecific
@@ -201,7 +368,7 @@ const VIPdle = () => {
 
     const list = gameMode.getCharacters?.() ?? [];
     setCharacters(list);
-    setTarget(list.length ? getDailyCharacter(list) : null);
+    setTarget(list.length ? getDailyCharacter(list, gameMode.id) : null);
     setGuesses([]);
     setGuess("");
     setGameOver(false);
@@ -209,24 +376,12 @@ const VIPdle = () => {
     setRevealedHints([]);
   }, [gameMode]);
 
-
-
-  const getDailyCharacter = (list) => {
-    if (!Array.isArray(list) || list.length === 0) return null;
-
-    // Use UTC date so everyone gets the same result
-    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-
-    // Simple deterministic hash from date string
-    let hash = 0;
-    for (let i = 0; i < today.length; i++) {
-      hash = (hash << 5) - hash + today.charCodeAt(i);
-      hash |= 0; // force 32-bit
-    }
-
-    const index = Math.abs(hash) % list.length;
-    return list[index];
-  };
+  /*console.table(
+    getNextDailyCharacters(characters, 20).map((d) => ({
+      date: d.date,
+      name: d.character?.name,
+    }))
+  );*/
 
   const handleGuess = (e) => {
     e.preventDefault();
@@ -362,9 +517,33 @@ const VIPdle = () => {
     }
 
     if (attr === "height") {
-      if (value === target[attr]) return "correct";
-      else if (typeof value === "number" && Math.abs(value - target[attr]) <= 0.1) return "close";
-      else return "wrong";
+      const guessCat = normalizeHeightCategory(value.height, value.gender);
+      const targetCat = normalizeHeightCategory(
+        target.height,
+        target.gender
+      );
+
+      if (!guessCat || !targetCat) return "wrong";
+
+      return guessCat === targetCat ? "correct" : "wrong";
+    }
+
+    if (attr === "status") {
+      const guessS = normalizeStatus(value.status);
+      const targetS = normalizeStatus(target.status);
+
+      if (!guessS || !targetS) return "wrong";
+
+      return guessS === targetS ? "correct" : "wrong";
+    }
+
+    if (attr === "zodiac") {
+      const guessZ = normalizeZodiac(value.zodiac);
+      const targetZ = normalizeZodiac(target.zodiac);
+
+      if (!guessZ || !targetZ) return "wrong";
+
+      return guessZ === targetZ ? "correct" : "wrong";
     }
 
     // default behavior
@@ -631,7 +810,7 @@ const VIPdle = () => {
           <div className="hints-box">
             {revealedHints.map((hint, i) => (
               <div key={i} className="hint">
-                💡 Hint {i + 1}: {hint}
+                💡 {t.hint} {i + 1}: {hint}
               </div>
             ))}
           </div>
@@ -651,17 +830,17 @@ const VIPdle = () => {
                 .map((col) => {
                   if (col === "picture") return "56px";
                   if (col === "name") return "130px";
-                  if (col === "gender") return "45px";
+                  if (col === "gender") return "80px";
                   //if (col === "orientation") return "85px";
-                  if (col === "children") return "60px";
-                  if (col === "height") return "85px";
+                  if (col === "children") return "80px";
+                  if (col === "height") return "80px";
                   if (col === "job") return "150px";
-                  if (col === "year") return "70px";
+                  if (col === "year") return "80px";
                   if (col === "place") return "100px";
-                  if (col === "status") return "60px";
-                  if (col === "fame") return "60px";
+                  if (col === "status") return "80px";
+                  if (col === "fame") return "80px";
                   if (col === "generations") return "110px";
-                  if (col === "zodiac") return "100px";
+                  if (col === "zodiac") return "900px";
                   if (col === "modespecific") return "150px";
                   return "80px";
                 })
@@ -729,7 +908,7 @@ const VIPdle = () => {
           className="report-open-btn"
           onClick={() => setShowReportModal(true)}
         >
-          🐞 Report database error
+          🐞 {t.reporterror}
         </button>
       </div>
     
