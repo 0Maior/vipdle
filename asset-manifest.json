@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/vipdle/static/css/main.b53899c1.css",
-    "main.js": "/vipdle/static/js/main.e50e1644.js",
+    "main.js": "/vipdle/static/js/main.a67cd62f.js",
     "static/js/453.440ffa97.chunk.js": "/vipdle/static/js/453.440ffa97.chunk.js",
     "index.html": "/vipdle/index.html",
     "main.b53899c1.css.map": "/vipdle/static/css/main.b53899c1.css.map",
-    "main.e50e1644.js.map": "/vipdle/static/js/main.e50e1644.js.map",
+    "main.a67cd62f.js.map": "/vipdle/static/js/main.a67cd62f.js.map",
     "453.440ffa97.chunk.js.map": "/vipdle/static/js/453.440ffa97.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.b53899c1.css",
-    "static/js/main.e50e1644.js"
+    "static/js/main.a67cd62f.js"
   ]
 }
