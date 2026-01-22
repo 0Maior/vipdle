@@ -78,7 +78,7 @@ function normalizeHeightCategory(height, gender) {
     if (["médio", "medio", "average"].includes(h)) return "average";
     if (["baixo", "short"].includes(h)) return "short";
 
-    return null;
+    return "unknown";
   }
 
   // Case 2: numeric height
@@ -96,8 +96,77 @@ function normalizeHeightCategory(height, gender) {
     }
   }
 
-  return null;
+  return "unknown";
 }
+
+const JOB_MAP = {
+  // Arts & Media
+  "academico": "academic",
+  "académico": "academic",
+  "artista plastico": "visual_artist",
+  "artista plástico": "visual_artist",
+  "ator": "actor",
+  "guionista": "screenwriter",
+  "humorista": "comedian",
+  "musico": "musician",
+  "músico": "musician",
+  "modelo": "model",
+  "youtuber": "youtuber",
+  "apresentador": "host",
+  "jornalista": "journalist",
+  "escritor": "writer",
+
+  // Sports
+  "atleta": "athlete",
+  "treinador": "coach",
+  "dirigente desportivo": "sports_executive",
+
+  // STEM / Professions
+  "engenheiro": "engineer",
+  "medico": "doctor",
+  "médico": "doctor",
+  "arquiteto": "architect",
+  "chef": "chef",
+  "aviador": "pilot",
+
+  // Politics / Power
+  "politico": "politician",
+  "político": "politician",
+  "rei": "royalty",
+  "militar": "military",
+  "religioso": "religious",
+
+  // Business / Society
+  "empresario": "businessperson",
+  "empresário": "businessperson",
+  "socialite": "socialite",
+
+  // Other
+  "ativista": "activist",
+  "explorador": "explorer",
+  "criminoso": "criminal",
+  "vitima": "victim",
+  "vítima": "victim",
+};
+
+function normalizeJob(jobList) {
+  if (!Array.isArray(jobList) || jobList.length === 0) {
+    return ["unknown"];
+  }
+
+  const normalized = jobList
+    .map(j =>
+      j
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+    )
+    .map(j => JOB_MAP[j] ?? "unknown");
+
+  // Remove duplicates + sort for stable comparison
+  return [...new Set(normalized)].sort();
+}
+
 
 const STATUS_MAP = {
   // Portuguese
@@ -159,16 +228,22 @@ const ZODIAC_MAP = {
 };
 
 function normalizeZodiac(value) {
-  if (!value) return null;
+  if (!value) return "unknown";
 
   const key = value
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
-  return ZODIAC_MAP[key] ?? null;
+  return ZODIAC_MAP[key] ?? "unknown";
 }
 
+function normalizeHint(value) {
+  if (typeof value !== "string") return "-";
+
+  const trimmed = value.trim();
+  return trimmed === "" ? "-" : trimmed;
+}
 
 const VIPdle = () => {
   const [gameMode, setGameMode] = useState(GAME_MODES?.[0] ?? null);
@@ -239,7 +314,6 @@ const VIPdle = () => {
       getClass: (c, target, getClass) => getClass("height", c),
     },
 
-
     job: {
       header: (
         <>
@@ -249,7 +323,13 @@ const VIPdle = () => {
           </Tooltip>
         </>
       ),
-      render: (c) => c.job.join(", "),
+      render: (c) => {
+        const jobs = normalizeJob(c.job);
+
+        return jobs
+          .map(j => t.job?.[j] ?? j)
+          .join(", ");
+      },
       getClass: (c, target, getClass) => getClass("job", c.job),
     },
 
@@ -464,7 +544,7 @@ const VIPdle = () => {
     if (!target || hintsUsed >= 3) return;
 
     const hintKey = `hint${hintsUsed + 1}`;
-    const nextHint = target[hintKey];
+    const nextHint = normalizeHint(target[hintKey]);
 
     if (!nextHint) {
       setHintsUsed(3); // no more hints available
@@ -523,7 +603,7 @@ const VIPdle = () => {
         target.gender
       );
 
-      if (!guessCat || !targetCat) return "wrong";
+      //if (!guessCat || !targetCat) return "wrong";
 
       return guessCat === targetCat ? "correct" : "wrong";
     }
@@ -541,7 +621,7 @@ const VIPdle = () => {
       const guessZ = normalizeZodiac(value.zodiac);
       const targetZ = normalizeZodiac(target.zodiac);
 
-      if (!guessZ || !targetZ) return "wrong";
+      //if (!guessZ || !targetZ) return "wrong";
 
       return guessZ === targetZ ? "correct" : "wrong";
     }

@@ -42,6 +42,48 @@ export const TRANSLATIONS = {
       average: "médio",
       short: "baixo",
     },
+    job: {
+      // Arts & Media
+      academic: "Académico",
+      visual_artist: "Artista Plástico",
+      actor: "Ator",
+      screenwriter: "Guionista",
+      comedian: "Humorista",
+      musician: "Músico",
+      model: "Modelo",
+      youtuber: "Youtuber",
+      host: "Apresentador",
+      journalist: "Jornalista",
+      writer: "Escritor",
+
+      // Sports
+      athlete: "Atleta",
+      coach: "Treinador",
+      sports_manager: "Dirigente Desportivo",
+
+      // STEM / Professions
+      engineer: "Engenheiro",
+      doctor: "Médico",
+      architect: "Arquiteto",
+      chef: "Chef",
+      pilot: "Aviador",
+
+      // Politics / Power
+      politician: "Político",
+      royalty: "Rei",
+      military: "Militar",
+      religious: "Religioso",
+
+      // Business / Society
+      businessperson: "Empresário",
+      socialite: "Socialite",
+
+      // Other
+      activist: "Ativista",
+      explorer: "Explorador",
+      criminal: "Criminoso",
+      victim: "Vítima",
+    },
     status: {
       alive: "Vivo",
       dead: "Morto",
@@ -100,6 +142,48 @@ export const TRANSLATIONS = {
       tall: "tall",
       average: "average",
       short: "short",
+    },
+    job: {
+      // Arts & Media
+      academic: "Academic",
+      visual_artist: "Visual Artist",
+      actor: "Actor",
+      screenwriter: "Screenwriter",
+      comedian: "Comedian",
+      musician: "Musician",
+      model: "Model",
+      youtuber: "Youtuber",
+      host: "Host",
+      journalist: "Journalist",
+      writer: "Writer",
+
+      // Sports
+      athlete: "Athlete",
+      coach: "Coach",
+      sports_manager: "Sports Manager",
+
+      // STEM / Professions
+      engineer: "Engineer",
+      doctor: "Doctor",
+      architect: "Architect",
+      chef: "Chef",
+      pilot: "Pilot",
+
+      // Politics / Power
+      politician: "Politician",
+      royalty: "Royalty",
+      military: "Military",
+      religious: "Religious",
+
+      // Business / Society
+      businessperson: "Businessperson",
+      socialite: "Socialite",
+
+      // Other
+      activist: "Sctivist",
+      explorer: "Explorer",
+      criminal: "Criminal",
+      victim: "Victim",
     },
     status: {
       alive: "Alive",
