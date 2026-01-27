@@ -180,14 +180,14 @@ const STATUS_MAP = {
 };
 
 function normalizeStatus(value) {
-  if (!value) return null;
+  if (!value) return "unknown";
 
   const key = value
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
-  return STATUS_MAP[key] ?? null;
+  return STATUS_MAP[key] ?? "unknown";
 }
 
 const ZODIAC_MAP = {

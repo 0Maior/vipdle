@@ -35,7 +35,7 @@ export const GAME_MODES = [
   },
   {
     id: "uk",
-    name: "UK",
+    name: "UK (NOT IMPLEMENTED YET)",
     description: "British Celebrities only",
     getCharacters: () => UK,
     columns: BASE_COLUMNS,
@@ -102,5 +102,17 @@ export const GAME_MODES = [
       "generations",
       "zodiac",
     ],
+  },
+  
+  {
+    id: "extremamentedesagradavel",
+    name: "Extremamente Desagradável",
+    description: "Visados no Extremamente Desagradável da Joana Marques",
+    getCharacters: () => ALL.filter(
+        (c) =>
+          Array.isArray(c.programs) &&
+          c.programs.some((j) => j.toLowerCase() === "extremamentedesagradavel")
+      ),
+    columns: BASE_COLUMNS,
   },
 ];
