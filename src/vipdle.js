@@ -253,6 +253,7 @@ const VIPdle = () => {
   const [guess, setGuess] = useState("");
   const [guesses, setGuesses] = useState([]);
   const [gameOver, setGameOver] = useState(false);
+  const [didQuit, setDidQuit] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -883,6 +884,20 @@ const VIPdle = () => {
               >
                 💡
               </button>
+
+              <button
+                type="button"
+                className="quit-btn"
+                disabled={gameOver}
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to quit?")) {
+                    setDidQuit(true);
+                    setGameOver(true);
+                  }
+                }}
+              >
+                ❌ Quit
+              </button>
             </div>
           </form>
         )}
@@ -896,11 +911,39 @@ const VIPdle = () => {
           </div>
         )}
 
-        {gameOver && (
-          <div className="win-banner">
-            🎉 You found {target.name}!
-          </div>
+        {gameOver && target && (
+          <>
+            <div className="final-character">
+              <a
+                //href={target.wikipedia}   TODO: ADD wikipedia column to the database
+                href={`https://en.wikipedia.org/wiki/${encodeURIComponent(
+                  target.name.replace(/ /g, "_")
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Open ${target.name} on Wikipedia`}
+              >
+                <img
+                  src={`${process.env.PUBLIC_URL}/images/${target.image}`}
+                  alt={target.name}
+                  className="final-character-img clickable"
+                  onError={(e) => {
+                    e.target.src = `${process.env.PUBLIC_URL}/images/placeholder.png`;
+                  }}
+                />
+              </a>
+            </div>
+
+            <div className={`win-banner ${didQuit ? "lost" : "won"}`}>
+              {didQuit ? (
+                <>😢 The character was <strong>{target.name}</strong>. Better luck next time!</>
+              ) : (
+                <>🎉 You found <strong>{target.name}</strong>!</>
+              )}
+            </div>
+          </>
         )}
+
 
         {/* Results Table */}
         <div className="table-wrapper">

@@ -158,6 +158,25 @@
   margin-bottom: 0.25rem;
 }
 
+.quit-btn {
+  background: transparent;
+  border: 1px solid #aaa;
+  color: #aaa;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.quit-btn:hover:not(:disabled) {
+  background: #222;
+  color: #fff;
+  border-color: #fff;
+}
+
+.quit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* ===== Win Banner ===== */
 .win-banner {
@@ -174,6 +193,41 @@
   color: var(--gold-soft);
   font-size: 1.5rem;
   font-weight: 700;
+}
+
+.win-banner.won {
+  background: #1f7a1f;
+  color: #fff;
+}
+
+.win-banner.lost {
+  background: #5a1a1a;
+  color: #fff;
+}
+
+.final-character {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.final-character-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.final-character-img.clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.final-character-img.clickable:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
 /* ===== Table ===== */
