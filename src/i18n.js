@@ -5,8 +5,8 @@ export const LANGUAGES = {
 
 export const TRANSLATIONS = {
   pt: {
-    subtitle:"Personalidade do dia",
-    guessinputplaceholder: "Insira o nome da Personalidade...",
+    subtitle:"Celebridade do dia",
+    guessinputplaceholder: "Insira o nome da Celebridade...",
     guess: "Adivinhar",
     hint: "Dica",
     hints: "Dicas",
@@ -14,6 +14,10 @@ export const TRANSLATIONS = {
     gameMode: "Modo de jogo",
     classic: "Clássico",
     musicians: "Apenas Músicos",
+    lose_banner_before:"😢 A Celebridade era ",
+    lose_banner_after:". Melhor sorte para a próxima!",
+    win_banner_before:"🎉 Descobriste ",
+    win_banner_after:"!",
     table: {
       picture: "Foto",
       name: "Nome",
@@ -115,6 +119,10 @@ export const TRANSLATIONS = {
     gameMode: "Game mode",
     classic: "Classic",
     musicians: "Musicians only",
+    lose_banner_before:"😢 The character was ",
+    lose_banner_after:". Better luck next time!",
+    win_banner_before:"🎉 You found",
+    win_banner_after:"!",
     table: {
       picture: "Picture",
       name: "Name",

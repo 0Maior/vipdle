@@ -119,7 +119,7 @@ const JOB_MAP = {
   // Sports
   "atleta": "athlete",
   "treinador": "coach",
-  "dirigente desportivo": "sports_executive",
+  "dirigente desportivo": "sports_manager",
 
   // STEM / Professions
   "engenheiro": "engineer",
@@ -808,6 +808,20 @@ const VIPdle = () => {
     return normalize(val);
   };
 
+  const openWikipedia = (character) => {
+    const name = character?.name;
+    if (!name) return;
+
+    const wikiUrl = character.wikipedia?.trim();
+
+    if (wikiUrl) {
+      window.open(wikiUrl, "_blank", "noopener,noreferrer");
+    } else {
+      const query = encodeURIComponent(`${name}`);
+      window.open(`https://www.google.com/search?q=${query}`, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
     <div className="app-bg">
       <div className="game-card">
@@ -915,10 +929,7 @@ const VIPdle = () => {
           <>
             <div className="final-character">
               <a
-                //href={target.wikipedia}   TODO: ADD wikipedia column to the database
-                href={`https://en.wikipedia.org/wiki/${encodeURIComponent(
-                  target.name.replace(/ /g, "_")
-                )}`}
+                href={target.wikipedia}
                 target="_blank"
                 rel="noopener noreferrer"
                 title={`Open ${target.name} on Wikipedia`}
@@ -927,6 +938,7 @@ const VIPdle = () => {
                   src={`${process.env.PUBLIC_URL}/images/${target.image}`}
                   alt={target.name}
                   className="final-character-img clickable"
+                  onClick={() => openWikipedia(target)}
                   onError={(e) => {
                     e.target.src = `${process.env.PUBLIC_URL}/images/placeholder.png`;
                   }}
@@ -934,13 +946,12 @@ const VIPdle = () => {
               </a>
             </div>
 
-            <div className={`win-banner ${didQuit ? "lost" : "won"}`}>
-              {didQuit ? (
-                <>😢 The character was <strong>{target.name}</strong>. Better luck next time!</>
-              ) : (
-                <>🎉 You found <strong>{target.name}</strong>!</>
-              )}
-            </div>
+           <div className={`win-banner ${didQuit ? "lost" : "won"}`}>
+              {didQuit
+                ? `${t.lose_banner_before}${target.name}${t.lose_banner_after}`
+                : `${t.win_banner_before}${target.name}${t.win_banner_after}`
+              }
+           </div>
           </>
         )}
 

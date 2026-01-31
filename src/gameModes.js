@@ -106,7 +106,7 @@ export const GAME_MODES = [
   
   {
     id: "extremamentedesagradavel",
-    name: "Extremamente Desagradável",
+    name: "Extremamente Desagradável (IN DEVELOPMENT)",
     description: "Visados no Extremamente Desagradável da Joana Marques",
     getCharacters: () => ALL.filter(
         (c) =>

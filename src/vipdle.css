@@ -502,6 +502,7 @@
 
 
 /* ===== Mobile ===== */
+
 @media (max-width: 640px) {
   .game-card {
     padding: 1rem;
@@ -533,6 +534,50 @@
     cursor: pointer;
   }
 }
+
+/*
+@media (max-width: 768px) {
+  .table {
+    display: grid;
+    grid-auto-flow: column;
+    overflow-x: auto;
+  }
+
+  .table-header {
+    display: grid;
+    grid-auto-flow: row;
+    position: sticky;
+    left: 0;
+    background: var(--card-bg);
+    z-index: 2;
+  }
+
+  .table-row {
+    display: grid;
+    grid-auto-flow: row;
+  }
+
+  .table-header-cell,
+  .tile {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+}
+@media (max-width: 768px) {
+  .table-header {
+    position: sticky;
+    left: 0;
+    background: linear-gradient(
+      to right,
+      var(--card-bg) 80%,
+      transparent
+    );
+    box-shadow: 6px 0 10px rgba(0, 0, 0, 0.2);
+  }
+} *(
 
 /* TABLETS */
 @media (max-width: 1024px) {
