@@ -32,14 +32,13 @@
   max-width: 80rem;
   position: relative;
   background: var(--bg-card);
-  /*backdrop-filter: blur(10px);*/
   border-radius: 1.25rem;
   padding: 2rem;
   border: 1px solid var(--gold);
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
 }
 
- /* ===== Logo ===== */
+/* ===== Logo ===== */
 .logo-wrapper {
   display: flex;
   justify-content: center;
@@ -58,7 +57,7 @@
   margin-bottom: 2rem;
 }
 
-/* ===== SETTINGS ===== */
+/* ===== Settings ===== */
 .settings-btn {
   position: absolute;
   top: 1rem;
@@ -70,9 +69,14 @@
   padding: 0.35rem 0.5rem;
   cursor: pointer;
   z-index: 5;
+  transition: background 0.15s ease;
 }
 
-/* ===== LANGUAGE ===== */
+.settings-btn:hover {
+  background: rgba(212, 175, 55, 0.15);
+}
+
+/* ===== Language ===== */
 .lang-btn {
   position: absolute;
   top: 1rem;
@@ -83,6 +87,11 @@
   border-radius: 0.5rem;
   padding: 0.35rem 0.5rem;
   cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.lang-btn:hover {
+  background: rgba(212, 175, 55, 0.15);
 }
 
 /* ===== Input ===== */
@@ -101,6 +110,7 @@
   background: var(--bg-dark);
   border: 1px solid #475569;
   color: #e5e7eb;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .guess-input:focus {
@@ -117,6 +127,11 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.guess-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
 }
 
 .guess-btn:disabled {
@@ -137,6 +152,11 @@
   border-radius: 0.4rem;
   padding: 0.4rem 0.55rem;
   cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.hint-btn:hover:not(:disabled) {
+  background: rgba(212, 175, 55, 0.15);
 }
 
 .hint-btn:disabled {
@@ -165,6 +185,7 @@
   padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .quit-btn:hover:not(:disabled) {
@@ -178,7 +199,7 @@
   cursor: not-allowed;
 }
 
-/* ===== Win Banner ===== */
+/* ===== Win / Loss Banner ===== */
 .win-banner {
   margin-bottom: 1.5rem;
   padding: 1.25rem;
@@ -197,11 +218,13 @@
 
 .win-banner.won {
   background: #1f7a1f;
+  border-color: #2fa56f;
   color: #fff;
 }
 
 .win-banner.lost {
   background: #5a1a1a;
+  border-color: #8b3a3a;
   color: #fff;
 }
 
@@ -240,29 +263,29 @@
 
 .table {
   min-width: 1024px;
-  
   position: relative;
   overflow: visible;
   z-index: 1;
 }
 
+/* Default grid — matches the column widths in vipdle.js.
+   The JS inline style will override this per game mode if columns change. */
 .table-header,
 .table-row {
   display: grid;
   grid-template-columns:
-    56px    /*Photo*/
-    150px   /*130px Name*/
-    80px    /*45px Sexo*/
-    /*85px*/    /*Orient.*/
-    80px    /*60px Filhos*/
-    85px    /*Altura*/
-    150px   /*Profissão*/
-    80px    /*Nasc*/
-    110px   /*Distrito*/
-    80px    /*60px DoA*/
-    80px    /*60px Fame*/
-    90px    /*Generations*/
-    90px;   /*100px Zodiac*/
+    56px    /* picture  */
+    130px   /* name     */
+    80px    /* gender   */
+    80px    /* children */
+    80px    /* height   */
+    150px   /* job      */
+    80px    /* year     */
+    100px   /* place    */
+    80px    /* status   */
+    80px    /* fame     */
+    110px   /* generations */
+    90px;   /* zodiac   */
   gap: 0.4rem;
   text-align: center;
 }
@@ -273,7 +296,6 @@
   border-bottom: 1px solid #475569;
   padding-bottom: 0.5rem;
   margin-bottom: 0.5rem;
-  
   position: relative;
 }
 
@@ -295,17 +317,6 @@
   flex-shrink: 0;
 }
 
-.table-header-cell {
-  position: relative;
-  z-index: 5;
-}
-
-.help-icon {
-  cursor: help;
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
 .tooltip {
   position: fixed;
   background: #020617;
@@ -322,12 +333,10 @@
   z-index: 999999;
 }
 
-/* SHOW TOOLTIP */
 .help-icon:hover + .tooltip {
   opacity: 1;
   pointer-events: auto;
 }
-
 
 /* ===== Picture Column ===== */
 .picture-cell {
@@ -358,6 +367,9 @@
   border-radius: 0.5rem;
   border: 1px solid #475569;
   font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tile.correct {
@@ -375,6 +387,13 @@
 .tile.wrong {
   background: var(--bg-dark);
   color: #e5e7eb;
+}
+
+/* ===== Year Arrow ===== */
+.arrow {
+  color: var(--gold-soft);
+  font-weight: 700;
+  margin-left: 0.2rem;
 }
 
 /* ===== Autocomplete ===== */
@@ -403,6 +422,7 @@
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
   cursor: pointer;
+  transition: background 0.1s ease;
 }
 
 .dropdown-item:hover,
@@ -416,6 +436,7 @@
   object-fit: cover;
   border-radius: 50%;
   border: 1px solid #475569;
+  flex-shrink: 0;
 }
 
 .highlight {
@@ -423,7 +444,7 @@
   font-weight: 700;
 }
 
-/* ===== Report Modal ===== */
+/* ===== Report Button ===== */
 .report-open-btn {
   margin-top: 1.5rem;
   width: 100%;
@@ -434,8 +455,14 @@
   color: var(--gold);
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 
+.report-open-btn:hover {
+  background: rgba(212, 175, 55, 0.1);
+}
+
+/* ===== Modals ===== */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -455,11 +482,19 @@
   border: 1px solid var(--gold);
 }
 
+.modal h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--gold-soft);
+}
+
 .modal label {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  color: #94a3b8;
 }
 
 .modal input,
@@ -469,14 +504,58 @@
   background: var(--bg-dark);
   border: 1px solid #475569;
   color: #e5e7eb;
+  transition: border-color 0.15s ease;
+}
+
+.modal input:focus,
+.modal select:focus {
+  outline: none;
+  border-color: var(--gold);
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
+  margin-top: 1rem;
 }
 
+.modal-cancel {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background: transparent;
+  border: 1px solid #475569;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.modal-cancel:hover {
+  background: rgba(71, 85, 105, 0.3);
+  color: #e5e7eb;
+}
+
+.modal-send {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+  border: none;
+  color: #020617;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.modal-send:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.modal-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== Game Mode Buttons ===== */
 .mode-btn {
   width: 100%;
   padding: 0.75rem;
@@ -487,12 +566,18 @@
   color: #e5e7eb;
   text-align: left;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.mode-btn:hover {
+  background: rgba(71, 85, 105, 0.3);
 }
 
 .mode-btn span {
   display: block;
   font-size: 0.75rem;
   opacity: 0.8;
+  margin-top: 0.2rem;
 }
 
 .mode-btn.active {
@@ -500,9 +585,7 @@
   background: rgba(212, 175, 55, 0.15);
 }
 
-
-/* ===== Mobile ===== */
-
+/* ===== Responsive — Mobile ===== */
 @media (max-width: 640px) {
   .game-card {
     padding: 1rem;
@@ -518,75 +601,97 @@
     max-width: 100%;
   }
 
-  .table {
-    min-width: 900px;
-  }
+  /* Desktop table is not rendered on mobile, so no min-width needed */
 
-  .tile,
-  .table-header > div {
-    font-size: 0.75rem;
-    padding: 0.35rem;
-  }
-}
-
-@media (max-width: 640px) {
   .help-icon {
     cursor: pointer;
   }
 }
 
-/*
-@media (max-width: 768px) {
-  .table {
-    display: grid;
-    grid-auto-flow: column;
-    overflow-x: auto;
-  }
-
-  .table-header {
-    display: grid;
-    grid-auto-flow: row;
-    position: sticky;
-    left: 0;
-    background: var(--card-bg);
-    z-index: 2;
-  }
-
-  .table-row {
-    display: grid;
-    grid-auto-flow: row;
-  }
-
-  .table-header-cell,
-  .tile {
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-  }
+/* ===== Mobile Transposed Cards ===== */
+.mobile-card {
+  width: 100%;
+  border: 1px solid #475569;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
 }
-@media (max-width: 768px) {
-  .table-header {
-    position: sticky;
-    left: 0;
-    background: linear-gradient(
-      to right,
-      var(--card-bg) 80%,
-      transparent
-    );
-    box-shadow: 6px 0 10px rgba(0, 0, 0, 0.2);
-  }
-} *(
 
-/* TABLETS */
+/* Avatar + name strip */
+.mobile-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.65rem;
+  background: rgba(30, 41, 59, 0.7);
+  border-bottom: 1px solid #475569;
+}
+
+.mobile-card-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 0.4rem;
+  object-fit: cover;
+  border: 1px solid #475569;
+  flex-shrink: 0;
+}
+
+.mobile-card-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Each attribute row: [label] [tile] */
+.mobile-card-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 0;
+}
+
+.mobile-card-label {
+  display: flex;
+  align-items: center;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.6);
+  border-right: 1px solid #475569;
+  border-bottom: 1px solid #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Reuse .tile but override for card context */
+.mobile-card-row .tile {
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid #334155;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.5rem;
+  text-align: left;
+  justify-content: flex-start;
+}
+
+/* Last row: drop the bottom border so it doesn't double with the card border */
+.mobile-card-row:last-child .mobile-card-label,
+.mobile-card-row:last-child .tile {
+  border-bottom: none;
+}
+
+/* ===== Responsive — Tablet ===== */
 @media (max-width: 1024px) {
   .table {
     min-width: 1050px;
   }
 
   .tile,
-  .table-header > div {
+  .table-header-cell {
     font-size: 0.8rem;
   }
 }

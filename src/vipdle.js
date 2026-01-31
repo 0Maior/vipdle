@@ -7,6 +7,25 @@ import { TRANSLATIONS } from "./i18n";
 
 const RATE_LIMIT_MS = 60 * 1000; // 1 minute
 
+// ---------------------------------------------------------------------------
+// Fires a re-render when the viewport crosses the mobile breakpoint (640px).
+// ---------------------------------------------------------------------------
+function useIsMobile(breakpoint = 640) {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" && window.innerWidth <= breakpoint
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    setIsMobile(mq.matches); // sync on mount
+    return () => mq.removeEventListener("change", handler);
+  }, [breakpoint]);
+
+  return isMobile;
+}
+
 
 function mulberry32(seed) {
   return function () {
@@ -245,6 +264,53 @@ function normalizeHint(value) {
   return trimmed === "" ? "-" : trimmed;
 }
 
+// ---------------------------------------------------------------------------
+// Scoring: ranks how well a character name matches the search query.
+// Lower score = better match.
+//   0  – full name starts with the query (best)
+//   1  – every token starts a word in the name
+//   2  – all tokens found somewhere inside the name (worst passing score)
+// Ties are broken by name length (shorter names first).
+// ---------------------------------------------------------------------------
+function scoreMatch(character, normalizedTokens) {
+  const names = Array.isArray(character.names) ? character.names : [character.name];
+
+  let bestScore = Infinity;
+
+  for (const fullName of names) {
+    const normName = fullName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/["()]/g, "")
+      .replace(/[^a-z0-9\s]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // Check: does the full name START with the entire query?
+    const fullQuery = normalizedTokens.join(" ");
+    if (normName.startsWith(fullQuery)) {
+      bestScore = Math.min(bestScore, 0);
+      continue;
+    }
+
+    // Check: does every token start a word boundary in the name?
+    const words = normName.split(" ");
+    const allTokensStartWord = normalizedTokens.every((token) =>
+      words.some((word) => word.startsWith(token))
+    );
+    if (allTokensStartWord) {
+      bestScore = Math.min(bestScore, 1);
+      continue;
+    }
+
+    // Fallback: all tokens appear somewhere (already guaranteed by the filter)
+    bestScore = Math.min(bestScore, 2);
+  }
+
+  return bestScore;
+}
+
 const VIPdle = () => {
   const [gameMode, setGameMode] = useState(GAME_MODES?.[0] ?? null);
   const [characters, setCharacters] = useState([]);
@@ -271,6 +337,7 @@ const VIPdle = () => {
 
   const [language, setLanguage] = useState("pt");
   const t = TRANSLATIONS[language];
+  const isMobile = useIsMobile();
 
   const COLUMN_CONFIG = {
     picture: {
@@ -457,13 +524,6 @@ const VIPdle = () => {
     setRevealedHints([]);
   }, [gameMode]);
 
-  /*console.table(
-    getNextDailyCharacters(characters, 20).map((d) => ({
-      date: d.date,
-      name: d.character?.name,
-    }))
-  );*/
-
   const handleGuess = (e) => {
     e.preventDefault();
     const foundChar = characters.find(c => c.name.toLowerCase() === guess.toLowerCase());
@@ -488,27 +548,31 @@ const VIPdle = () => {
 
     if (!value) {
       setSuggestions(characters);
+      setShowDropdown(true);
       return;
     }
 
     const normalizedValue = normalize(value);
-    const searchTokens = normalizedValue.split(" ");
+    const searchTokens = normalizedValue.split(" ").filter(Boolean);
 
+    // Filter: all tokens must appear somewhere in at least one of the character's names
     const matches = characters.filter((c) => {
-      const names = Array.isArray(c.names)
-        ? c.names
-        : [c.name];
+      const names = Array.isArray(c.names) ? c.names : [c.name];
 
       return names.some((fullName) => {
         const normalizedName = normalize(fullName);
-
-        // ALL search tokens must appear somewhere in the name
-        return searchTokens.every(token =>
-          normalizedName.includes(token)
-        );
+        return searchTokens.every((token) => normalizedName.includes(token));
       });
     });
-    
+
+    // Sort by match quality, then alphabetically as tiebreaker
+    matches.sort((a, b) => {
+      const scoreA = scoreMatch(a, searchTokens);
+      const scoreB = scoreMatch(b, searchTokens);
+      if (scoreA !== scoreB) return scoreA - scoreB;
+      return a.name.localeCompare(b.name);
+    });
+
     setSuggestions(matches);
     setShowDropdown(true);
   };
@@ -604,8 +668,6 @@ const VIPdle = () => {
         target.gender
       );
 
-      //if (!guessCat || !targetCat) return "wrong";
-
       return guessCat === targetCat ? "correct" : "wrong";
     }
 
@@ -621,8 +683,6 @@ const VIPdle = () => {
     if (attr === "zodiac") {
       const guessZ = normalizeZodiac(value.zodiac);
       const targetZ = normalizeZodiac(target.zodiac);
-
-      //if (!guessZ || !targetZ) return "wrong";
 
       return guessZ === targetZ ? "correct" : "wrong";
     }
@@ -643,21 +703,66 @@ const VIPdle = () => {
     setActiveIndex(-1);
   };
 
+  // Highlights every matched token inside the displayed name.
+  // Finds all occurrences, merges overlapping ranges, then renders
+  // plain and highlighted segments in order.
   const highlightMatch = (text, match) => {
     if (!match) return text;
 
-    const start = text.toLowerCase().indexOf(match.toLowerCase());
-    if (start === -1) return text;
+    const tokens = normalize(match).split(" ").filter(Boolean);
+    if (tokens.length === 0) return text;
 
-    return (
-      <>
-        {text.slice(0, start)}
-        <span className="highlight">
-          {text.slice(start, start + match.length)}
+    // Normalize the display text the same way for index matching
+    const normText = text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    // Collect all [start, end) ranges where any token appears
+    const ranges = [];
+    for (const token of tokens) {
+      let pos = 0;
+      while (pos < normText.length) {
+        const idx = normText.indexOf(token, pos);
+        if (idx === -1) break;
+        ranges.push([idx, idx + token.length]);
+        pos = idx + 1;
+      }
+    }
+
+    if (ranges.length === 0) return text;
+
+    // Sort ranges by start position, then merge any that overlap or touch
+    ranges.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const merged = [ranges[0].slice()];
+    for (let i = 1; i < ranges.length; i++) {
+      const last = merged[merged.length - 1];
+      if (ranges[i][0] <= last[1]) {
+        last[1] = Math.max(last[1], ranges[i][1]);
+      } else {
+        merged.push(ranges[i].slice());
+      }
+    }
+
+    // Walk through merged ranges and build React segments
+    const segments = [];
+    let cursor = 0;
+    for (const [start, end] of merged) {
+      if (cursor < start) {
+        segments.push(<span key={`p-${cursor}`}>{text.slice(cursor, start)}</span>);
+      }
+      segments.push(
+        <span key={`h-${start}`} className="highlight">
+          {text.slice(start, end)}
         </span>
-        {text.slice(start + match.length)}
-      </>
-    );
+      );
+      cursor = end;
+    }
+    if (cursor < text.length) {
+      segments.push(<span key={`p-${cursor}`}>{text.slice(cursor)}</span>);
+    }
+
+    return <>{segments}</>;
   };
 
   const getCharacterByName = (name) =>
@@ -958,85 +1063,134 @@ const VIPdle = () => {
 
         {/* Results Table */}
         <div className="table-wrapper">
-          <div className="table"
-            style={{
-              gridTemplateColumns: columns
-                .map((col) => {
-                  if (col === "picture") return "56px";
-                  if (col === "name") return "130px";
-                  if (col === "gender") return "80px";
-                  //if (col === "orientation") return "85px";
-                  if (col === "children") return "80px";
-                  if (col === "height") return "80px";
-                  if (col === "job") return "150px";
-                  if (col === "year") return "80px";
-                  if (col === "place") return "100px";
-                  if (col === "status") return "80px";
-                  if (col === "fame") return "80px";
-                  if (col === "generations") return "110px";
-                  if (col === "zodiac") return "900px";
-                  if (col === "modespecific") return "150px";
-                  return "80px";
-                })
-                .join(" "),
-            }}
-          >
-            <div className="table-header">
-              {columns.map((col) => {
-                const config = COLUMN_CONFIG[col];
 
-                if (!config) {
-                  console.error("Missing column config:", col);
-                  return (
-                    <div key={col} className="table-header-cell">
-                      ?
-                    </div>
-                  );
-                }
-
-                let header;
-
-                if (typeof config.header === "function") {
-                  // mode-dependent header
-                  header = config.header({ gameMode, t });
-                } else if (typeof config.header === "string") {
-                  // translatable string header
-                  header = t?.table?.[config.header] ?? config.header;
-                } else {
-                  // JSX header (already rendered)
-                  header = config.header;
-                }
-
-                return (
-                  <div key={col} className="table-header-cell">
-                    {header}
-                  </div>
-                );
-              })}
-            </div>
-            {guesses.map((g, i) => (
-              <div key={i} className="table-row">
+          {/* ── DESKTOP: normal grid (header row + guess rows) ── */}
+          {!isMobile && (
+            <div className="table"
+              style={{
+                gridTemplateColumns: columns
+                  .map((col) => {
+                    if (col === "picture") return "56px";
+                    if (col === "name") return "130px";
+                    if (col === "gender") return "80px";
+                    if (col === "children") return "80px";
+                    if (col === "height") return "80px";
+                    if (col === "job") return "150px";
+                    if (col === "year") return "80px";
+                    if (col === "place") return "100px";
+                    if (col === "status") return "80px";
+                    if (col === "fame") return "80px";
+                    if (col === "generations") return "110px";
+                    if (col === "zodiac") return "90px";
+                    if (col === "modespecific") return "150px";
+                    return "80px";
+                  })
+                  .join(" "),
+              }}
+            >
+              <div className="table-header">
                 {columns.map((col) => {
                   const config = COLUMN_CONFIG[col];
+
                   if (!config) {
                     console.error("Missing column config:", col);
-                    return <div key={col} className="tile wrong">—</div>;
+                    return (
+                      <div key={col} className="table-header-cell">
+                        ?
+                      </div>
+                    );
+                  }
+
+                  let header;
+
+                  if (typeof config.header === "function") {
+                    header = config.header({ gameMode, t });
+                  } else if (typeof config.header === "string") {
+                    header = t?.table?.[config.header] ?? config.header;
+                  } else {
+                    header = config.header;
                   }
 
                   return (
-                    <div
-                      key={col}
-                      className={`tile ${
-                        config.getClass ? config.getClass(g, target, getClass) : ""
-                      }`}
-                    >
-                      {config.render(g, target)}
+                    <div key={col} className="table-header-cell">
+                      {header}
                     </div>
                   );
                 })}
               </div>
-            ))}
-          </div>
+              {guesses.map((g, i) => (
+                <div key={i} className="table-row">
+                  {columns.map((col) => {
+                    const config = COLUMN_CONFIG[col];
+                    if (!config) {
+                      console.error("Missing column config:", col);
+                      return <div key={col} className="tile wrong">—</div>;
+                    }
+
+                    return (
+                      <div
+                        key={col}
+                        className={`tile ${
+                          config.getClass ? config.getClass(g, target, getClass) : ""
+                        }`}
+                      >
+                        {config.render(g, target)}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── MOBILE: transposed cards (one card per guess) ── */}
+          {isMobile && guesses.map((g, i) => (
+            <div key={i} className="mobile-card">
+              {/* Avatar + name strip at the top of each card */}
+              <div className="mobile-card-header">
+                <img
+                  src={`${process.env.PUBLIC_URL}/images/${g.image}`}
+                  alt={g.name}
+                  className="mobile-card-avatar"
+                  onError={(e) => {
+                    e.target.src = `${process.env.PUBLIC_URL}/images/placeholder.png`;
+                  }}
+                />
+                <span className="mobile-card-name">{g.name}</span>
+              </div>
+
+              {/* Attribute rows — skip "picture" and "name", already shown above */}
+              {columns
+                .filter((col) => col !== "picture" && col !== "name")
+                .map((col) => {
+                  const config = COLUMN_CONFIG[col];
+                  if (!config) return null;
+
+                  let header;
+                  if (typeof config.header === "function") {
+                    header = config.header({ gameMode, t });
+                  } else if (typeof config.header === "string") {
+                    header = t?.table?.[config.header] ?? config.header;
+                  } else {
+                    header = config.header;
+                  }
+
+                  return (
+                    <div key={col} className="mobile-card-row">
+                      <div className="mobile-card-label">{header}</div>
+                      <div
+                        className={`tile ${
+                          config.getClass ? config.getClass(g, target, getClass) : ""
+                        }`}
+                      >
+                        {config.render(g, target)}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          ))}
+
         </div>
         <button
           className="report-open-btn"
