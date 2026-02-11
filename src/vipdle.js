@@ -1014,8 +1014,9 @@ const VIPdle = () => {
                     setGameOver(true);
                   }
                 }}
+                title={`${t.quit}`}
               >
-                ❌ Quit
+                ❌ {t.quit}
               </button>
             </div>
           </form>

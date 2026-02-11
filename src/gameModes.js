@@ -19,13 +19,13 @@ const BASE_COLUMNS = [
 ];
 
 export const GAME_MODES = [
-  {
+  /*{
     id: "default",
     name: "Classic",
     description: "All characters",
     getCharacters: () => ALL,
     columns: BASE_COLUMNS,
-  },
+  },*/
   {
     id: "pt",
     name: "PT",
@@ -35,7 +35,7 @@ export const GAME_MODES = [
   },
   {
     id: "uk",
-    name: "UK (NOT IMPLEMENTED YET)",
+    name: "UK",
     description: "British Celebrities only",
     getCharacters: () => UK,
     columns: BASE_COLUMNS,
