@@ -132,7 +132,7 @@ export const GAME_MODES = [
       labelKey: "modespecific1_comedian",
       tooltipKey: "modespecific1_comedian",
     },
-    modespecific2: {
+    modeSpecific2: {
       label: "Channel",
       tooltip: "Live / TV / Radio / Social Networks",
       

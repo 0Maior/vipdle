@@ -1,5 +1,5 @@
 import "./vipdle.css";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import emailjs from "@emailjs/browser";
 import Tooltip from "./Tooltip";
 import { GAME_MODES } from "./gameModes";
@@ -335,10 +335,12 @@ const VIPdle = () => {
 
   const [hintsUsed, setHintsUsed] = useState(0);
   const [revealedHints, setRevealedHints] = useState([]);
+  const [lastGuessedCharacter, setLastGuessedCharacter] = useState(null);
 
   const [language, setLanguage] = useState("pt");
   const t = TRANSLATIONS[language];
   const isMobile = useIsMobile();
+  const dropdownRef = useRef(null);
 
   const COLUMN_CONFIG = {
     picture: {
@@ -500,10 +502,24 @@ const VIPdle = () => {
 
       render: (c) => c.modespecific1.join(", ") || "—",
 
-      getClass: (c, target) =>
-        target && c.modespecific1 === target.modespecific1
-          ? "correct"
-          : "wrong",
+      getClass: (c, target) => {
+        if (!target) return "wrong";
+        
+        const matches = c.modespecific1.filter(item => 
+          target.modespecific1.includes(item)
+        ).length;
+
+        if (matches === target.modespecific1.length && 
+            c.modespecific1.length === target.modespecific1.length) {
+          return "correct";
+        }
+
+        if (matches > 0) {
+          return "close";
+        }
+
+        return "wrong";
+      },
     },
 
     modespecific2: {
@@ -530,10 +546,24 @@ const VIPdle = () => {
 
       render: (c) => c.modespecific2.join(", ") || "—",
 
-      getClass: (c, target) =>
-        target && c.modespecific2 === target.modespecific2
-          ? "correct"
-          : "wrong",
+      getClass: (c, target) => {
+        if (!target) return "wrong";
+        
+        const matches = c.modespecific2.filter(item => 
+          target.modespecific2.includes(item)
+        ).length;
+
+        if (matches === target.modespecific2.length && 
+            c.modespecific2.length === target.modespecific2.length) {
+          return "correct";
+        }
+
+        if (matches > 0) {
+          return "close";
+        }
+
+        return "wrong";
+      },
     },
   };
 
@@ -552,7 +582,46 @@ const VIPdle = () => {
     setGameOver(false);
     setHintsUsed(0);
     setRevealedHints([]);
+    setLastGuessedCharacter(null); // Reset on new game
   }, [gameMode]);
+
+  // Scroll dropdown to show the last guessed character when dropdown opens
+  useEffect(() => {
+    if (showDropdown && dropdownRef.current && lastGuessedCharacter && !guess) {
+      // Find the index of the last guessed character in the suggestions list
+      const lastIndex = suggestions.findIndex(c => c.id === lastGuessedCharacter.id);
+      
+      if (lastIndex !== -1) {
+        // Each dropdown item: padding (8px top + 8px bottom) + avatar (36px) = 52px
+        const itemHeight = 52;
+        const scrollPosition = lastIndex * itemHeight;
+        
+        // Scroll to that position
+        dropdownRef.current.scrollTop = scrollPosition;
+      }
+    }
+  }, [showDropdown, lastGuessedCharacter, guess, suggestions]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        // Check if click is also outside the input field
+        const inputElement = event.target.closest('.autocomplete');
+        if (!inputElement) {
+          setShowDropdown(false);
+        }
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
 
   const handleGuess = (e) => {
     e.preventDefault();
@@ -560,6 +629,7 @@ const VIPdle = () => {
     
     if (foundChar) {
       setGuesses([foundChar, ...guesses]);
+      setLastGuessedCharacter(foundChar); // Track last guess
       if (foundChar.id === target.id) setGameOver(true);
       setGuess("");
     } else {
@@ -998,7 +1068,7 @@ const VIPdle = () => {
               />
 
               {showDropdown && suggestions.length > 0 && (
-                <ul className="dropdown">
+                <ul className="dropdown" ref={dropdownRef}>
                   {suggestions.map((c, index) => (
                     <li
                       key={c.id}
