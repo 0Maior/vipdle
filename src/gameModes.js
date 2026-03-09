@@ -49,12 +49,12 @@ export const GAME_MODES = [
           Array.isArray(c.job) &&
           c.job.some((j) => j.toLowerCase() === "músico")
       ),
-    modeSpecific: {
+    modeSpecific1: {
       label: "Music Style",
       tooltip: "Primary music genre or style",
 
-      labelKey: "modespecific_music",
-      tooltipKey: "modespecific_music",
+      labelKey: "modespecific1_music",
+      tooltipKey: "modespecific1_music",
     },
     columns: [
       "picture",
@@ -62,7 +62,7 @@ export const GAME_MODES = [
       "gender",
       "children",
       "height",
-      "modespecific",
+      "modespecific1",
       "year",
       "place",
       "status",
@@ -81,12 +81,12 @@ export const GAME_MODES = [
           Array.isArray(c.job) &&
           c.job.some((j) => j.toLowerCase() === "político")
       ),
-    modeSpecific: {
+    modeSpecific1: {
       label: "Political Party",
       tooltip: "Main political affiliation",
       
-      labelKey: "modespecific_politics",
-      tooltipKey: "modespecific_politics",
+      labelKey: "modespecific1_politics",
+      tooltipKey: "modespecific1_politics",
     },
     columns: [
       "picture",
@@ -94,7 +94,7 @@ export const GAME_MODES = [
       "gender",
       "children",
       "height",
-      "modespecific",
+      "modespecific1",
       "year",
       "place",
       "status",
@@ -114,5 +114,44 @@ export const GAME_MODES = [
           c.programs.some((j) => j.toLowerCase() === "extremamentedesagradavel")
       ),
     columns: BASE_COLUMNS,
+  },
+
+  {
+    id: "comedians",
+    name: "Comedians only",
+    description: "Comedian figures",
+    getCharacters: () => ALL.filter(
+        (c) =>
+          Array.isArray(c.job) &&
+          c.job.some((j) => j.toLowerCase() === "humorista")
+      ),
+    modeSpecific1: {
+      label: "Performance Format",
+      tooltip: "Stand-up / Sketch / Improv / Musical",
+      
+      labelKey: "modespecific1_comedian",
+      tooltipKey: "modespecific1_comedian",
+    },
+    modespecific2: {
+      label: "Channel",
+      tooltip: "Live / TV / Radio / Social Networks",
+      
+      labelKey: "modespecific2_comedian",
+      tooltipKey: "modespecific2_comedian",
+    },
+    columns: [
+      "picture",
+      "name",
+      "gender",
+      "children",
+      "height",
+      "modespecific1",
+      "modespecific2",
+      "year",
+      "place",
+      "status",
+      "fame",
+      "generations",
+    ],
   },
 ];

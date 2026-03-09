@@ -67,6 +67,7 @@ function getDailyCharacter(list, salt = "") {
   return shuffled[0];
 }
 
+/*
 function getNextDailyCharacters(list, days = 20, salt = "") {
   const results = [];
   const today = new Date();
@@ -87,6 +88,7 @@ function getNextDailyCharacters(list, days = 20, salt = "") {
 
   return results;
 }
+*/
 
 function normalizeHeightCategory(height, gender) {
   // Case 1: already a string in DB
@@ -185,7 +187,6 @@ function normalizeJob(jobList) {
   // Remove duplicates + sort for stable comparison
   return [...new Set(normalized)].sort();
 }
-
 
 const STATUS_MAP = {
   // Portuguese
@@ -475,16 +476,15 @@ const VIPdle = () => {
       getClass: (c, target, getClass) => getClass("zodiac", c),
     },
 
-
-    modespecific: {
+    modespecific1: {
       header: ({ gameMode, t }) => {
         const label =
-          t?.table?.[gameMode?.modeSpecific?.labelKey] ??
-          gameMode?.modeSpecific?.labelKey ??
+          t?.table?.[gameMode?.modeSpecific1?.labelKey] ??
+          gameMode?.modeSpecific1?.labelKey ??
           "Extra";
 
         const tooltipText =
-          t?.tooltips?.[gameMode?.modeSpecific?.tooltipKey];
+          t?.tooltips?.[gameMode?.modeSpecific1?.tooltipKey];
 
         return (
           <>
@@ -498,10 +498,40 @@ const VIPdle = () => {
         );
       },
 
-      render: (c) => c.modespecific.join(", ") || "—",
+      render: (c) => c.modespecific1.join(", ") || "—",
 
       getClass: (c, target) =>
-        target && c.modespecific === target.modespecific
+        target && c.modespecific1 === target.modespecific1
+          ? "correct"
+          : "wrong",
+    },
+
+    modespecific2: {
+      header: ({ gameMode, t }) => {
+        const label =
+          t?.table?.[gameMode?.modeSpecific2?.labelKey] ??
+          gameMode?.modeSpecific2?.labelKey ??
+          "Extra";
+
+        const tooltipText =
+          t?.tooltips?.[gameMode?.modeSpecific2?.tooltipKey];
+
+        return (
+          <>
+            {label}
+            {tooltipText && (
+              <Tooltip content={tooltipText}>
+                <span className="help-icon">ℹ️</span>
+              </Tooltip>
+            )}
+          </>
+        );
+      },
+
+      render: (c) => c.modespecific2.join(", ") || "—",
+
+      getClass: (c, target) =>
+        target && c.modespecific2 === target.modespecific2
           ? "correct"
           : "wrong",
     },
@@ -902,7 +932,7 @@ const VIPdle = () => {
       .replace(/[^a-z0-9\s]/g, "")    // remove other punctuation
       .replace(/\s+/g, " ")           // collapse spaces
       .trim();
-
+  
   const normalizeValue = (val) => {
     if (Array.isArray(val)) {
       return val.map(normalize).sort().join(",");
@@ -1083,7 +1113,8 @@ const VIPdle = () => {
                     if (col === "fame") return "80px";
                     if (col === "generations") return "110px";
                     if (col === "zodiac") return "90px";
-                    if (col === "modespecific") return "150px";
+                    if (col === "modespecific1") return "150px";
+                    if (col === "modespecific2") return "150px";
                     return "80px";
                   })
                   .join(" "),
