@@ -67,6 +67,48 @@ function getDailyCharacter(list, salt = "") {
   return shuffled[0];
 }
 
+// Check if a character has too many empty/missing fields
+function countEmptyColumns(character, columns) {
+  let emptyCount = 0;
+  
+  // Only check columns that are actually being displayed (exclude 'picture' and 'name')
+  const columnsToCheck = columns.filter(col => col !== 'picture' && col !== 'name');
+  
+  for (const col of columnsToCheck) {
+    const value = character[col];
+    
+    // Check if value is empty, null, undefined, or empty array
+    if (value === null || value === undefined || value === "" || value === "-") {
+      emptyCount++;
+    } else if (Array.isArray(value) && value.length === 0) {
+      emptyCount++;
+    }
+  }
+  
+  return emptyCount;
+}
+
+// Get a valid daily character with maximum 2 empty columns
+function getValidDailyCharacter(list, columns, salt = "", maxEmpty = 2) {
+  if (!Array.isArray(list) || list.length === 0) return null;
+
+  const dateStr = new Date().toISOString().slice(0, 10); // UTC
+  const seed = hashString(`${dateStr}-${salt}`);
+
+  const shuffled = seededShuffle(list, seed);
+  
+  // Try to find a character with <= maxEmpty empty columns
+  for (const character of shuffled) {
+    const emptyCount = countEmptyColumns(character, columns);
+    if (emptyCount <= maxEmpty) {
+      return character;
+    }
+  }
+  
+  // Fallback: if all characters have too many empty columns, return the first one
+  return shuffled[0];
+}
+
 /*
 function getNextDailyCharacters(list, days = 20, salt = "") {
   const results = [];
@@ -576,29 +618,35 @@ const VIPdle = () => {
 
     const list = gameMode.getCharacters?.() ?? [];
     setCharacters(list);
-    setTarget(list.length ? getDailyCharacter(list, gameMode.id) : null);
+    
+    // Use getValidDailyCharacter to ensure target has enough data
+    setTarget(list.length ? getValidDailyCharacter(list, columns, gameMode.id, 2) : null);
+    
     setGuesses([]);
     setGuess("");
     setGameOver(false);
     setHintsUsed(0);
     setRevealedHints([]);
     setLastGuessedCharacter(null); // Reset on new game
-  }, [gameMode]);
+  }, [gameMode, columns]);
 
   // Scroll dropdown to show the last guessed character when dropdown opens
   useEffect(() => {
     if (showDropdown && dropdownRef.current && lastGuessedCharacter && !guess) {
-      // Find the index of the last guessed character in the suggestions list
-      const lastIndex = suggestions.findIndex(c => c.id === lastGuessedCharacter.id);
-      
-      if (lastIndex !== -1) {
-        // Each dropdown item: padding (8px top + 8px bottom) + avatar (36px) = 52px
-        const itemHeight = 52;
-        const scrollPosition = lastIndex * itemHeight;
+      // Small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        // Find the actual DOM element for the last guessed character
+        const items = dropdownRef.current.querySelectorAll('.dropdown-item');
+        const lastIndex = suggestions.findIndex(c => c.id === lastGuessedCharacter.id);
         
-        // Scroll to that position
-        dropdownRef.current.scrollTop = scrollPosition;
-      }
+        if (lastIndex !== -1 && items[lastIndex]) {
+          // Scroll the element into view
+          items[lastIndex].scrollIntoView({
+            block: 'start',    // Align to top of dropdown
+            behavior: 'auto'   // Instant scroll (no animation)
+          });
+        }
+      }, 0);
     }
   }, [showDropdown, lastGuessedCharacter, guess, suggestions]);
 
@@ -675,6 +723,11 @@ const VIPdle = () => {
 
     setSuggestions(matches);
     setShowDropdown(true);
+    
+    // Reset scroll to top when user is typing/filtering
+    if (dropdownRef.current) {
+      dropdownRef.current.scrollTop = 0;
+    }
   };
 
   const handleFocus = () => {
