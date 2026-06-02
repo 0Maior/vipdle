@@ -57,6 +57,7 @@ function seededShuffle(array, seed) {
   return result;
 }
 
+/*
 function getDailyCharacter(list, salt = "") {
   if (!Array.isArray(list) || list.length === 0) return null;
 
@@ -66,7 +67,7 @@ function getDailyCharacter(list, salt = "") {
   const shuffled = seededShuffle(list, seed);
   return shuffled[0];
 }
-
+*/
 // Check if a character has too many empty/missing fields
 function countEmptyColumns(character, columns) {
   let emptyCount = 0;
@@ -609,7 +610,7 @@ const VIPdle = () => {
     },
   };
 
-
+  // eslint-disable-next-line
   const columns = gameMode?.columns ?? [];
 
   // Initialize game: Pick a random character
@@ -628,6 +629,7 @@ const VIPdle = () => {
     setHintsUsed(0);
     setRevealedHints([]);
     setLastGuessedCharacter(null); // Reset on new game
+    // eslint-disable-next-line
   }, [gameMode, columns]);
 
   // Scroll dropdown to show the last guessed character when dropdown opens
