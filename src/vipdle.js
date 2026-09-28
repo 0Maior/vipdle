@@ -6,6 +6,7 @@ import { GAME_MODES } from "./gameModes";
 import { TRANSLATIONS } from "./i18n";
 
 const RATE_LIMIT_MS = 60 * 1000; // 1 minute
+const COOLDOWN_DAYS = 180;
 
 // ---------------------------------------------------------------------------
 // Fires a re-render when the viewport crosses the mobile breakpoint (640px).
@@ -26,36 +27,6 @@ function useIsMobile(breakpoint = 640) {
   return isMobile;
 }
 
-
-function mulberry32(seed) {
-  return function () {
-    let t = (seed += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function hashString(str) {
-  let h = 2166136261;
-  for (let i = 0; i < str.length; i++) {
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-
-function seededShuffle(array, seed) {
-  const rng = mulberry32(seed);
-  const result = [...array];
-
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-
-  return result;
-}
 
 /*
 function getDailyCharacter(list, salt = "") {
@@ -89,24 +60,65 @@ function countEmptyColumns(character, columns) {
   return emptyCount;
 }
 
-// Get a valid daily character with maximum 2 empty columns
-function getValidDailyCharacter(list, columns, salt = "", maxEmpty = 2) {
-  if (!Array.isArray(list) || list.length === 0) return null;
 
-  const dateStr = new Date().toISOString().slice(0, 10); // UTC
+// Função "pura": dado um dia, devolve sempre a mesma personagem,
+// sem se preocupar com cooldown. É a base para tudo.
+function basePickForDate(list, columns, dateStr, salt = "", maxEmpty = 2) {
   const seed = hashString(`${dateStr}-${salt}`);
-
   const shuffled = seededShuffle(list, seed);
-  
-  // Try to find a character with <= maxEmpty empty columns
+
   for (const character of shuffled) {
-    const emptyCount = countEmptyColumns(character, columns);
-    if (emptyCount <= maxEmpty) {
+    if (countEmptyColumns(character, columns) <= maxEmpty) {
       return character;
     }
   }
-  
-  // Fallback: if all characters have too many empty columns, return the first one
+  return shuffled[0];
+}
+
+function toDateStr(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function addDays(dateStr, days) {
+  const d = new Date(dateStr + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return toDateStr(d);
+}
+
+function getValidDailyCharacter(list, columns, salt = "", maxEmpty = 2) {
+  if (!Array.isArray(list) || list.length === 0) return null;
+
+  const todayStr = toDateStr(new Date());
+
+  // 1. Reconstrói quem "saiu" nos últimos COOLDOWN_DAYS dias,
+  //    usando a função base (rápido, janela fixa de tamanho constante).
+  const recentIds = new Set();
+  for (let i = 1; i <= COOLDOWN_DAYS; i++) {
+    const pastDate = addDays(todayStr, -i);
+    const pastChar = basePickForDate(list, columns, pastDate, salt, maxEmpty);
+    if (pastChar) recentIds.add(pastChar.id);
+  }
+
+  // 2. Escolhe a personagem de hoje, evitando quem esteve em cooldown.
+  const seed = hashString(`${todayStr}-${salt}`);
+  const shuffled = seededShuffle(list, seed);
+
+  // 1ª passagem: fora do cooldown + respeita maxEmpty
+  for (const character of shuffled) {
+    if (recentIds.has(character.id)) continue;
+    if (countEmptyColumns(character, columns) <= maxEmpty) {
+      return character;
+    }
+  }
+
+  // 2ª passagem: fora do cooldown, ignora maxEmpty
+  for (const character of shuffled) {
+    if (!recentIds.has(character.id)) {
+      return character;
+    }
+  }
+
+  // Fallback extremo: lista pequena demais para o cooldown pedido
   return shuffled[0];
 }
 
